@@ -1,0 +1,121 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+    color: #fff;
+}
+
+a {
+    text-decoration: none;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+header .logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #008080;
+    text-transform: uppercase;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    padding: 0;
+    margin: 0;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease-in-out;
+    text-transform: uppercase;
+}
+
+header nav ul li a:hover {
+    color: #008080;
+}
+
+main {
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    font-size: 2rem;
+    color: #008080;
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: bold;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.carousel {
+    position: relative;
+    width: 100%;
+    max-width: 950px;
+    margin: 20px auto;
+    height: 400px;
+    /* Set a height to create the scrollable area */
+    overflow-y: auto;
+    /* Allows vertical scrolling */
+    overflow-x: hidden;
+    /* Prevents horizontal scrolling */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #0f2027;
+    scroll-behavior: smooth;
+    /* Smooth scrolling for better UX */
+    padding: 15px;
+}
+
+.carousel-container {
+    display: flex;
+    flex-direction: column;
+    /* Stack reviews vertically */
+    gap: 15px;
+    /* Spacing between reviews */
+}
+
+.carousel-container .review {
+    background-color: #203a43;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+
+/* Optional: Customize scrollbar */
+
+.carousel::-webkit-scrollbar {
+    width: 8px;
+    /* Adjust the width of the scrollbar*/
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    margin-top: 20px;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
+}

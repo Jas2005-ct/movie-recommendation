@@ -1,0 +1,26 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}"> {% endblock %}
+<section class="featured">
+    <h1><a href="{% url 'index' %}">Feature Movies</a>/<a href="{% url 'old_mov' %}">Retro Movies</a></h1>
+    <form class="srt" method="GET" action="{% url 'old_mov' %}">
+        <select name="sort" onchange="this.form.submit()">
+            <option value="">Select Option</option>
+            <option value="year">Year</option>
+            <option value="az">A to Z</option>
+        </select>
+    </form>
+</section>
+<div class="movies">
+    {% for ti in tit %}
+    <div class="movie">
+        <a href="{% url 'mov_detail' id=ti.id %}">
+            <img src="{{ti.img.url}}">
+        </a>
+        <h2>{{ti.name}} </h2>
+        <p>{{ti.rate}}</p>
+        <p class=" year ">{{ti.year}}</p>
+    </div>
+    {% endfor %}
+</div>
+<script src="{% static 'js/script.js' %} "></script>
+{%endblock%}

@@ -1,0 +1,22 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}"> {% endblock %}
+
+<head>
+    <title>Search Results</title>
+</head>
+<main>
+    <section class="featured">
+        <div class="movies">
+            {% for c in ca %}
+            <div class="movie">
+                <a href="{{c.a}}">
+                    <img src="{{baseUrl}}/{{c.img}}">
+                </a>
+                <h2>{{c.name}} </h2>
+
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{%endblock%}

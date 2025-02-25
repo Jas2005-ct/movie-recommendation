@@ -1,0 +1,63 @@
+{% extends 'header.html' %}{% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/came.css' %}">{% endblock %} {% block content %}
+<center>
+    <h1>Capture Your Emotion</h1>
+
+    <button class='show' id="open-camera">Open Camera</button>
+
+    <div id="camera-container" style="display: none;">
+        <video id="camera-stream" autoplay></video>
+        <center>
+            <button class='show' id="capture-btn">Capture</button>
+        </center>
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <center><img id="captured-image" style="display: none; max-width: 300px; border-radius:4px;" /></center>
+    <form id="image-form" method="POST" action="{% url 'capture_emotion' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="image_data" id="image-data">
+        <button type="submit" class='show' id="submit-image" style="display: none;">Detect Emotion</button>
+    </form>
+</center>
+
+<script>
+    const openCameraBtn = document.getElementById("open-camera");
+    const captureBtn = document.getElementById("capture-btn");
+    const video = document.getElementById("camera-stream");
+    const canvas = document.getElementById("canvas");
+    const imageInput = document.getElementById("image-data");
+    const capturedImage = document.getElementById("captured-image");
+    const submitButton = document.getElementById("submit-image");
+
+    let stream;
+
+    openCameraBtn.addEventListener("click", async() => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: true
+            });
+            video.srcObject = stream;
+            document.getElementById("camera-container").style.display = "block";
+        } catch (error) {
+            alert("Failed to access camera. Please check permissions.");
+        }
+    });
+
+    captureBtn.addEventListener("click", () => {
+        const context = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL("image/png"); // Convert to Base64
+        capturedImage.src = imageData;
+        capturedImage.style.display = "block";
+        imageInput.value = imageData; // Store image data in hidden input
+        submitButton.style.display = "block";
+
+        // Stop camera
+        stream.getTracks().forEach(track => track.stop());
+    });
+</script>
+
+{% endblock %}

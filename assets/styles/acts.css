@@ -1,0 +1,150 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: antiquewhite;
+    color: #333;
+}
+
+.navigation {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-around;
+    margin: 0;
+    padding: 0;
+    gap: 20px;
+}
+
+.navigation li {
+    position: relative;
+}
+
+.navigation a {
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    padding: 10px 15px;
+    display: block;
+    transition: color 0.3s, background-color 0.3s;
+    border-radius: 5px;
+}
+
+.navigation a:hover {
+    color: #fff;
+    background-color: #13b9a3;
+}
+
+.navigation a:active {
+    background-color: #13b9a3;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: burlywood;
+    padding: 10px 20px;
+    color: #000;
+}
+
+header .logo {
+    font-size: 2rem;
+    font-weight: bolder;
+}
+
+header .search-bar {
+    display: flex;
+    gap: 5px;
+}
+
+header .search-bar input {
+    padding: 5px;
+    font-size: 1rem;
+}
+
+header .search-bar button {
+    padding: 5px 10px;
+    font-size: 1rem;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+main {
+    padding: 20px;
+}
+
+.featured h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    margin-top: 20px;
+}
+
+.year {
+    font-size: 16px;
+    color: #555;
+    margin-top: 5px;
+}
+
+.movies {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* Automatically adjusts to screen size */
+    gap: 30px;
+    margin: 0 auto;
+    padding: 20px;
+    max-width: 1200px;
+    justify-items: center;
+    /* Center-align individual blocks */
+}
+
+.movie {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 200px;
+    /* Fixed width */
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie:hover {
+    transform: translateY(-5px);
+    /* Lift the block slightly on hover */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    /* Enhance shadow on hover */
+}
+
+.movie img {
+    display: block;
+    width: 100%;
+    /* Image adjusts to the block width */
+    height: 250px;
+    /* Fixed height */
+    object-fit: cover;
+    /* Ensures the image is properly cropped without distortion */
+    border-radius: 5px;
+}
+
+.movie h2 {
+    margin: 10px 0 5px 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.movie h3 {
+    font-size: 1em;
+    margin: 5px 0;
+    color: #555;
+}

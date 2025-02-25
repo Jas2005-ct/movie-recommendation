@@ -1,0 +1,21 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/acts.css' %}"> {% endblock %}
+
+<main>
+    <section class="featured">
+        <h1>DIRECTOR</h1>
+        <div class="movies">
+            {% for a in dir %}
+            <div class="movie">
+                <a href="{%url 'director_detail' director_id=a.director_id %}">
+                    <img src="{{a.img.url}}">
+                </a>
+                <h2>{{a.director}} </h2>
+            </div>
+            {%endfor%}
+        </div>
+    </section>
+</main>{%endblock%}
+</body>
+
+</html>

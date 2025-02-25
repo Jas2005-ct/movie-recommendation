@@ -1,0 +1,41 @@
+{% load static %} {% static "images" as baseUrl %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StoryScroll{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'styles/head.css' %}"> {% block sepr_css %}{% endblock %}
+    <link rel="icon" href="{% static 'images/icon3.jpg' %}">
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+    <body>
+        <header>
+            <a href="{% url 'index'%}">
+                <div class="logo">StoryScroll</div>
+            </a>
+            <nav>
+                <ul class="navigation">
+                    <li><a href="{% url 'index' %}">Movies</a></li>
+                    <li><a href="{% url 'show' %}">TV Shows</a></li>
+                    <li><a href="{% url 'genre' %}">Genre</a></li>
+                    <li><a href="{% url 'sort' %}">Category</a></li>
+                    <li><a href="{% url 'camera_page' %}">Capture Emotion</a></li>
+                    <button id="capture-button" style="display: none;">Capture</button>
+                    <canvas id="capture-canvas" style="display: none;"></canvas>
+                </ul>
+            </nav>
+            {% block sear%}
+            <form method="GET" action="{% url 'search_results' %}">
+                <input class='tex' type="text" name="query" placeholder="Search by name or year" value="{{ query }}">
+                <button class="sea" type="submit">Search</button>
+            </form>{%endblock%}
+        </header>
+    </body>
+    {% block content %}{% endblock %}
+    <footer>
+        <p>&copy; 2024 StoryScroll. All Rights Reserved.</p>
+    </footer>

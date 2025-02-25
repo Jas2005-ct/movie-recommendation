@@ -1,0 +1,19 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/year.css' %}"> {% endblock %}
+
+<main>
+    <section class="featured">
+        <h1>Featured Movies</h1>
+    </section>
+    <div class="year-buttons">
+        {% for year in years %}
+        <a href="{% url 'year_b' year=year %}">
+            <button class="year-button">
+                            {{ year }}
+                    </button>
+        </a>
+        {% endfor %}
+    </div>
+
+</main>
+{% endblock%}

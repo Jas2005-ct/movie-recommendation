@@ -1,0 +1,30 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/show.css' %}"> {% endblock %}
+<main>
+    <section class="featured">
+        <h1>Featured Movies</h1>
+        </h1>
+        <form class="srt" method="GET" action="{% url 'show' %}">
+            <select name="sort" onchange="this.form.submit()">
+            <option value="">Select Option</option>
+            <option value="year">Year</option>
+            <option value="az">A to Z</option>
+        </select>
+        </form>
+    </section>
+    <div class="movies">
+        {% for tits in sh %}
+        <div class="movie">
+            <a href="{% url 'show_det' id=tits.id %}">
+                <img src="{{tits.img.url}}">
+            </a>
+            <h2>{{tits.name}} </h2>
+            <p>{{tits.rate}}</p>
+            <p class=" year ">{{tits.year_f}}</p>
+            <p>{{tits.ep}}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</main>
+{%endblock%}

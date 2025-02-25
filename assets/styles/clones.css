@@ -1,0 +1,155 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: antiquewhite;
+    color: #333;
+}
+
+.navigation {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-around;
+    margin: 0;
+    padding: 0;
+    gap: 20px;
+}
+
+.navigation li {
+    position: relative;
+}
+
+.navigation a {
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+    padding: 10px 15px;
+    display: block;
+    transition: color 0.3s, background-color 0.3s;
+    border-radius: 5px;
+}
+
+.navigation a:hover {
+    color: #fff;
+    background-color: #007bff;
+}
+
+.navigation a:active {
+    background-color: #0056b3;
+}
+
+.navigation a:focus,
+.navigation a:nth-child(1) {
+    background-color: #f8f9fa;
+}
+
+.navigation a:nth-child(2) {
+    background-color: #04ff19;
+}
+
+.navigation a:nth-child(3) {
+    background-color: #f1f3f5;
+}
+
+.navigation a:nth-child(4) {
+    background-color: #dee2e6;
+}
+
+.navigation a:nth-child(5) {
+    background-color: #f8f9fa;
+}
+
+.navigation a:hover::before {
+    transform: translateX(5px);
+}
+
+.movies {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 40px;
+    gap: 30px;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: burlywood;
+    padding: 10px 20px;
+    color: #000;
+}
+
+header .logo {
+    font-size: 2rem;
+    font-weight: bolder;
+}
+
+header .search-bar {
+    display: flex;
+    gap: 5px;
+}
+
+header .search-bar input {
+    padding: 5px;
+    font-size: 1rem;
+}
+
+header .search-bar button {
+    padding: 5px 10px;
+    font-size: 1rem;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+main {
+    padding: 20px;
+}
+
+.featured h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.movie {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.movie img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 300px;
+    border-radius: 10px
+}
+
+.movie h2 {
+    font-size: 1.2rem;
+    margin: 10px 0 5px;
+}
+
+.movie p {
+    font-size: 1rem;
+    color: #666;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    margin-top: 20px;
+}
+
+.year {
+    font-size: 16px;
+    color: #555;
+    margin-top: 5px;
+}

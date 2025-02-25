@@ -1,0 +1,22 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/act_detail.css' %}">{% endblock %}{% block title %}{{ com.comedian }} {% endblock %}{% block content %}
+<main>
+    <center>
+        <h1>{{com.comedian}}</h1>
+    </center>
+    <section class="movie-details">
+        <div class="details-wrapper">
+            <div class="movie-poster">
+                <img src="{{com.img.url}}">
+            </div>
+            <div class="movie-info ">
+                <p><strong>Comedian:</strong> {{com.com}}</p>
+                <p><strong>Date Of Birth:</strong> {{com.date_of_birth}}</p>
+                <p><strong>Debut Movie:</strong>{{com.debut_movie}}</p>
+                <p><strong>Debut Year:</strong> {{com.debut_year}}</p>
+            </div>
+        </div>
+    </section>
+</main>
+<script src="details.js "></script>
+{%endblock%}

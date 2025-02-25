@@ -1,0 +1,50 @@
+.movies {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* Four equal-width columns */
+    padding: 40px;
+    gap: 30px;
+    /* Space between movies */
+}
+
+.movie {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    /* Smooth scaling effect */
+}
+
+.movie:hover {
+    transform: scale(1.05);
+    /* Slight zoom effect on hover */
+}
+
+.movie img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 300px;
+    border-radius: 10px;
+}
+
+.movie h2 {
+    font-size: 1.2rem;
+    margin: 10px 0 5px;
+    color: #333;
+}
+
+.movie p {
+    font-size: 1rem;
+    color: #666;
+}
+
+.year {
+    font-size: 16px;
+    color: #555;
+    margin-top: 5px;
+}

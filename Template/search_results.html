@@ -1,0 +1,26 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/searchr.css' %}"> {% endblock %}
+
+<head>
+    <title>Search Results</title>
+</head>
+<main>
+    <section class="featured">
+        <h1>Search Results for "{{ query }}"</h1>
+        <div class="movies">
+            {% if movies %} {% for tits in movies %}
+            <div class="movie">
+                <a href="{% url 'mov_detail' id=tits.id %}">
+                    <img src="{{tits.img.url}}">
+                </a>
+                <h2>{{tits.name}} </h2>
+                <p>{{tits.rate}}</p>
+                <p class=" year ">{{tits.year}}</p>
+            </div>
+            {% endfor %} {% else %}
+            <p>No results found for "{{ query }}".</p>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{%endblock%}

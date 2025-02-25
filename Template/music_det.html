@@ -1,0 +1,22 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/act_detail.css' %}">{% endblock %} {% block title %}{{ musi.music }}{% endblock %} {% block content %}
+<main>
+    <center>
+        <h1>{{musi.music}}</h1>
+    </center>
+    <section class="movie-details">
+        <div class="details-wrapper">
+            <div class="movie-poster">
+                <img src="{{musi.img.url}}">
+            </div>
+            <div class="movie-info ">
+                <p><strong>Music Director:</strong> {{musi.music}}</p>
+                <p><strong>Date Of Birth:</strong> {{musi.date_of_birth}}</p>
+                <p><strong>Debut Movie:</strong>{{musi.debut_movie}}</p>
+                <p><strong>Debut Year:</strong> {{musi.debut_year}}</p>
+            </div>
+        </div>
+    </section>
+</main>
+<script src="details.js "></script>
+{%endblock%}

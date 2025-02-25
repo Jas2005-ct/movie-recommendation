@@ -1,0 +1,18 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/year_based.css' %}"> {% endblock %}
+<main>
+    <section class="featured">
+        <h1>Movies In {{year}}</h1>
+        <div class="movies">
+            {% for movie in movies %}
+            <div class="movie">
+                <img src="{{movie.img.url}}" alt="JAILER">
+                <h2>{{movie.name}} </h2>
+                <p>{{movie.rate}}</p>
+                <p class="year">{{movie.year}}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}

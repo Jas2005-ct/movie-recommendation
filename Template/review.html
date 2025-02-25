@@ -1,0 +1,62 @@
+{% load static %} {% static "images" as baseUrl %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{movie.name}}</title>
+    <link rel="stylesheet" href="{% static 'styles/reviewstyle.css' %}">
+    <link rel="icon" href="{% static 'images/icon3.jpg' %}">
+</head>
+
+<body>
+
+    <header>
+        <a href="{% url 'index'%}">
+            <div class="logo">StoryScroll</div>
+        </a>
+        <nav>
+            <ul class="navigation">
+                <li><a href="{% url 'index' %}">Movies</a></li>
+                <li><a href="{% url 'show' %}">TV Shows</a></li>
+                <li><a href="{% url 'genre' %}">Genre</a></li>
+                <li><a href="{% url 'sort' %}">Category</a></li>
+                <li><a href="{% url 'camera_page' %}">Capture Emotion</a></li>
+                <video id="camera-stream" autoplay style="display: none;"></video>
+                <button id="capture-button" style="display: none;">Capture</button>
+                <canvas id="capture-canvas" style="display: none;"></canvas>
+            </ul>
+        </nav>
+        <form method="GET" action="{% url 'search_results' %}">
+            <input type="text" name="query" placeholder="Search by name or year" value="{{ query }}">
+            <button type="submit">Search</button>
+        </form>
+    </header>
+    <main>
+        <section class="review-list">
+            <i><h1>Pov Hub</h1></i>
+            <div class="movie-poster">
+                <center><img src="{{movie.img.url}}" alt="{{ movie.name }} Poster"></center>
+            </div>
+            <div class="carousel">
+                <div class="carousel-container" id="reviewsContainer">
+                    {% if reviews.exists %} {% for review in reviews %}
+                    <div class="review">
+                        <p><strong>Rating:</strong> {{ review.rating }} ⭐</p>
+                        <p>{{ review.review_text }}</p>
+                    </div>
+                    {% endfor %}{% else %}
+                    <p>No reviews submitted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 StoryScroll. All Rights Reserved.</p>
+    </footer>
+    <script src="{% static 'js/reviewstyle.js' %} "></script>
+</body>
+
+</html>

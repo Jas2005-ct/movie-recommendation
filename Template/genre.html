@@ -1,0 +1,28 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/cate.css' %}"> {% endblock %}{% block sear%}
+<form method="get" action="{% url 'emotion_based_search' %}">
+    <label for="emotion">How are you feeling?</label>
+    <input type="text" id="emotion" name="emotion" placeholder="e.g., I feel so happy today!">
+    <button class='sea' type="submit">Find Movies</button>
+</form>
+{%endblock%} {% block content %}
+
+<head>
+    <title>Search Results</title>
+</head>
+<main>
+    <section class="featured">
+        <div class="movies">
+            {% for c in cat %}
+            <div class="movie">
+                <a href="{% url 'genre_movies' genre_id=c.genre_id%}">
+                    <img src="{{c.img.url}}">
+                </a>
+                <h2>{{c.genre}} </h2>
+
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}

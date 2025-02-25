@@ -1,0 +1,35 @@
+ {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/act_detail.css' %}">{% endblock %} {% block title %}{{ direc.director }}{% endblock %}{% block content %}
+<main>
+    <h1>
+        <center>{{direc.director}}</center>
+    </h1>
+    <section class="movie-details">
+        <div class="details-wrapper">
+            <div class="movie-poster">
+                <img src="{{direc.img.url}}">
+            </div>
+            <div class="movie-info ">
+                <p><strong>Actor:</strong> {{direc.director}}</p>
+                <p><strong>Date Of Birth:</strong> {{direc.date_of_birth}}</p>
+                <p><strong>Debut Movie:</strong>{{direc.debut_movie}}</p>
+                <p><strong>Debut Year:</strong> {{direc.debut_year}}</p>
+            </div>
+        </div>
+
+    </section>
+    <div class="movies">
+        {% for tits in movies %}
+        <div class="movie">
+            <a href="{% url 'mov_detail' id=tits.id %}">
+                <img src="{{tits.img.url}}">
+            </a>
+            <h2>{{tits.name}} </h2>
+            <p>{{tits.rate}}</p>
+            <p class=" year ">{{tits.year}}</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+<script src="details.js "></script>
+{%endblock%}
