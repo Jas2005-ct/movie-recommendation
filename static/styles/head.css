@@ -1,115 +1,176 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-    color: #fff;
-}
+/* =========================================================
+   StoryScroll — Header / Footer / Global Shell (head.css)
+   ========================================================= */
 
-.sea {
-    padding: 03px 10px;
-    background: #008080;
-    border: none;
-    border-radius: 5px;
-}
-
-.sea:hover {
-    background: #203a43;
-    /* Slightly darker shade on hover */
-}
-
-.sea:active {
-    background: #008080;
-}
-
-.tex {
-    border-radius: 3px;
-    border: none;
-    padding: 03px 15px;
-    ;
-}
-
+/* ── Header ─────────────────────────────────────────────── */
 header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: rgba(0, 0, 0, 0.85);
-    padding: 10px 20px;
-    color: #fff;
+    gap: var(--sp-lg);
+    padding: 0 var(--sp-xl);
+    height: 70px;
+    flex-shrink: 0;
+    background: rgba(8, 12, 20, 0.85);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid var(--clr-border-dim);
+    box-shadow: 0 2px 32px rgba(0, 0, 0, 0.4);
 }
 
+/* ── Logo ───────────────────────────────────────────────── */
 header .logo {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #008080;
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--clr-accent) 0%, #f5d78f 50%, var(--clr-accent-dim) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 12px rgba(232, 184, 75, 0.35));
+    white-space: nowrap;
+    transition: filter var(--dur-normal) var(--ease-smooth);
 }
 
-header nav ul {
+header .logo:hover {
+    filter: drop-shadow(0 0 20px rgba(232, 184, 75, 0.6));
+}
+
+/* ── Navigation ─────────────────────────────────────────── */
+header nav ul.navigation {
     list-style: none;
     display: flex;
-    gap: 20px;
+    gap: var(--sp-xs);
     padding: 0;
     margin: 0;
 }
 
-header nav ul li {
-    display: inline;
+header nav ul.navigation li {
+    display: flex;
+    align-items: center;
 }
 
-header nav ul li a {
-    text-decoration: none;
-    color: #fff;
-    font-size: 1rem;
+header nav ul.navigation li a {
     position: relative;
+    display: inline-block;
+    padding: 6px 14px;
+    font-size: 0.82rem;
     font-weight: 500;
-    transition: color 0.3s ease, transform 0.3s ease;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--clr-text-muted);
+    border-radius: var(--r-sm);
+    transition: color var(--dur-fast) var(--ease-smooth),
+        background var(--dur-fast) var(--ease-smooth);
 }
 
-header nav ul li a::after {
+header nav ul.navigation li a::after {
     content: '';
     position: absolute;
-    left: 50%;
-    bottom: -5px;
-    transform: translateX(-50%);
-    width: 0;
+    left: 14px;
+    bottom: 2px;
     height: 2px;
-    background: #008080;
-    transition: width 0.5s ease-in-out;
+    width: 0;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--clr-accent), var(--clr-accent-dim));
+    transition: width var(--dur-slow) var(--ease-smooth);
 }
 
-header nav ul li a:hover::after {
-    width: 100%;
+header nav ul.navigation li a:hover {
+    color: var(--clr-accent);
+    background: rgba(232, 184, 75, 0.07);
 }
 
-header nav ul li a:hover {
-    color: #008080;
-    transform: translateY(-2px);
+header nav ul.navigation li a:hover::after {
+    width: calc(100% - 28px);
 }
 
-header .search-bar {
+/* ── Search form ─────────────────────────────────────────── */
+header form {
     display: flex;
-    gap: 5px;
+    align-items: center;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--clr-border-dim);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    transition: border-color var(--dur-normal) var(--ease-smooth),
+        box-shadow var(--dur-normal) var(--ease-smooth);
 }
 
-header .search-bar input {
-    padding: 5px;
-    font-size: 1rem;
+header form:focus-within {
+    border-color: var(--clr-accent-dim);
+    box-shadow: 0 0 0 3px rgba(232, 184, 75, 0.12);
 }
 
-a {
-    text-decoration: none;
+header form input.tex {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 9px 16px;
+    font-size: 0.88rem;
+    font-family: var(--font-body);
+    color: var(--clr-text);
+    width: 220px;
+    transition: width var(--dur-normal) var(--ease-smooth);
 }
 
+header form input.tex::placeholder {
+    color: var(--clr-text-dim);
+}
+
+header form input.tex:focus {
+    width: 280px;
+}
+
+header form button.sea {
+    flex-shrink: 0;
+    padding: 9px 18px;
+    background: linear-gradient(135deg, var(--clr-accent) 0%, var(--clr-accent-dim) 100%);
+    border: none;
+    color: #0d1525;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: filter var(--dur-fast) var(--ease-smooth),
+        transform var(--dur-fast) var(--ease-smooth);
+}
+
+header form button.sea:hover {
+    filter: brightness(1.15);
+    transform: none;
+}
+
+header form button.sea:active {
+    filter: brightness(0.9);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
 footer {
     text-align: center;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.85);
-    color: #fff;
-    margin-top: 20px;
-    text-decoration: none;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
-    bottom: 40%;
+    padding: var(--sp-lg) var(--sp-xl);
+    background: rgba(8, 12, 20, 0.9);
+    border-top: 1px solid var(--clr-border-dim);
+    color: var(--clr-text-dim);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    margin-top: var(--sp-xl);
+    flex-shrink: 0;
+}
+
+footer p {
+    margin: 0;
+}
+
+footer p span {
+    color: var(--clr-accent);
+    font-weight: 600;
 }

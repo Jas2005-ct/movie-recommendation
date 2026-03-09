@@ -1,51 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
-body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-    color: #ffffff;
-}
+/* =========================================================
+   StoryScroll — Year Picker Page (year.css)
+   ========================================================= */
 
 .featured h1 {
-    padding: 10px 20px;
-    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    padding: var(--sp-xl) var(--sp-xl) var(--sp-md);
+    letter-spacing: -0.01em;
 }
 
+/* ── Year button grid ─────────────────────────────────────── */
 .year-buttons {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    margin-top: 20px;
+    gap: var(--sp-md);
+    padding: var(--sp-md) var(--sp-xl) var(--sp-2xl);
+    animation: fadeInUp 0.4s var(--ease-smooth) both;
 }
 
 .year-button {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #ffffff;
-    background: linear-gradient(to right, #008080, #20c997);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--clr-text);
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border-dim);
+    border-radius: var(--r-md);
+    padding: 10px 22px;
     cursor: pointer;
-    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-a {
-    text-decoration: none;
+    transition: transform var(--dur-fast) var(--ease-smooth),
+        border-color var(--dur-fast) var(--ease-smooth),
+        background var(--dur-fast) var(--ease-smooth),
+        color var(--dur-fast) var(--ease-smooth),
+        box-shadow var(--dur-fast) var(--ease-smooth);
+    backdrop-filter: blur(8px);
 }
 
 .year-button:hover {
-    transform: scale(1.1);
-    background: linear-gradient(to right, #20c997, #008080);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, var(--clr-accent) 0%, var(--clr-accent-dim) 100%);
+    border-color: var(--clr-accent);
+    color: #0d1525;
+    box-shadow: 0 6px 20px rgba(232, 184, 75, 0.35);
 }
 
 .year-button:active {
-    transform: scale(1.05);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+    transform: translateY(0);
+    box-shadow: none;
 }

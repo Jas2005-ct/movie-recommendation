@@ -1,262 +1,262 @@
-    main {
-        padding: 20px;
-        max-width: 1000px;
-        margin: auto;
-        margin-top: 20px;
-        background-color: rgba(0, 0, 0, 0.8);
-        border-radius: 8px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    }
-    
-    .movie-details h1 {
-        font-size: 2.5rem;
-        color: #008080;
-        text-align: center;
-        margin-bottom: 20px;
-        text-decoration: none;
-    }
-    
-    .details-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    .movie-poster img {
-        max-width: 700px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    }
-    
-    .movie-info {
-        text-align: center;
-        line-height: 1.8;
-    }
-    
-    .movie-info p {
-        font-size: 1.1rem;
-        margin: 10px 0;
-    }
-    
-    .movie-info a {
-        display: inline-block;
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #008080;
-        color: #000;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: background-color 0.3s, transform 0.2s;
-    }
-    
-    .movie-info a:hover {
-        background-color: #008080;
-        transform: scale(1.1);
-    }
-    
-    @media (min-width: 900px) {
-        .details-wrapper {
-            flex-direction: row;
-            justify-content: space-between;
-        }
-        .movie-poster img {
-            max-width: 500px;
-        }
-        .movie-info {
-            text-align: left;
-            max-width: 500px;
-        }
-    }
-    
-    .show button {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #ffffff;
-        background: linear-gradient(to right, #008080, #20c997);
-        border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        cursor: pointer;
-        transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    }
-    
-    .movies {
-        display: flex;
-        justify-content: center;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 30px;
-        flex-wrap: wrap;
-        margin-top: 20px;
+/* =========================================================
+   StoryScroll — Actor/Actress Detail Page (act_detail.css)
+   ========================================================= */
+
+main {
+    padding: var(--sp-xl);
+    max-width: 1000px;
+    margin: var(--sp-xl) auto;
+}
+
+/* ── Profile card ────────────────────────────────────────── */
+.movie-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-xl);
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border-dim);
+    border-radius: var(--r-xl);
+    padding: var(--sp-xl);
+    backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-card);
+    animation: fadeInUp 0.4s var(--ease-smooth) both;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+    .movie-details {
+        flex-direction: row;
         align-items: flex-start;
     }
-    
-    .movie {
-        background-color: #1f1f1f;
-        border: 1px solid #333;
-        border-radius: 10px;
-        text-align: center;
-        padding: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        max-width: 250px;
-        margin: 10px;
-        text-decoration: none;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+}
+
+.movie-details img {
+    width: 200px;
+    height: 260px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: var(--r-lg);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--clr-border);
+    flex-shrink: 0;
+    transition: transform var(--dur-normal) var(--ease-smooth);
+}
+
+.movie-details img:hover {
+    transform: scale(1.03);
+}
+
+.movie-details .details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+    flex: 1;
+    min-width: 0;
+}
+
+.movie-details h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--clr-text);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--sp-sm);
+}
+
+.movie-details p {
+    font-size: 0.95rem;
+    color: var(--clr-text-muted);
+    line-height: 1.75;
+}
+
+.movie-details p strong {
+    color: var(--clr-accent);
+    font-weight: 600;
+}
+
+/* ── CTA / action buttons ─────────────────────────────────── */
+.movie-info a,
+.show button {
+    display: inline-flex;
+    align-items: center;
+    margin-top: var(--sp-md);
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--clr-accent) 0%, var(--clr-accent-dim) 100%);
+    color: #0d1525;
+    border: none;
+    border-radius: var(--r-md);
+    font-weight: 700;
+    font-size: 0.88rem;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: filter var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
+    box-shadow: 0 4px 16px rgba(232, 184, 75, 0.28);
+}
+
+.movie-info a:hover,
+.show button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(232, 184, 75, 0.4);
+}
+
+/* ── Filmography grid ─────────────────────────────────────── */
+.movies {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--sp-lg);
+    margin-top: var(--sp-xl);
+    padding: 0 var(--sp-xl) var(--sp-2xl);
+    animation: fadeInUp 0.45s var(--ease-smooth) both;
+}
+
+.movie {
+    position: relative;
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border-dim);
+    border-radius: var(--r-lg);
+    text-align: center;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--dur-normal) var(--ease-smooth),
+        box-shadow var(--dur-normal) var(--ease-smooth),
+        border-color var(--dur-normal) var(--ease-smooth);
+    max-width: 200px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.movie:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--clr-border);
+}
+
+.movie img {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-smooth);
+}
+
+.movie:hover img {
+    transform: scale(1.06);
+}
+
+.movie::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(to top, var(--clr-bg-deep) 0%, transparent 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.movie h2 {
+    position: relative;
+    z-index: 2;
+    font-family: var(--font-display);
+    font-size: 0.93rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    padding: 10px 10px 4px;
+}
+
+.movie p {
+    position: relative;
+    z-index: 2;
+    font-size: 0.76rem;
+    color: var(--clr-accent);
+    padding: 0 10px 12px;
+}
+
+/* ── Modal ────────────────────────────────────────────────── */
+.movie-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    padding: var(--sp-xl);
+    border-radius: var(--r-xl);
+    text-align: center;
+    width: 90%;
+    max-width: 560px;
+    position: relative;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.28s var(--ease-smooth);
+    color: var(--clr-text);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
     }
-    
-    a {
-        text-decoration: none;
+
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
-    
-    .movie:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-    }
-    
-    .movie img {
-        width: 250px;
-        /* Fixed width */
-        height: 350px;
-        /* Fixed height */
-        object-fit: cover;
-        /* Ensures images fit nicely */
-        margin-bottom: 15px;
-        border-radius: 5px;
-        transition: transform 0.3s ease;
-    }
-    
-    .movie:hover img {
-        transform: scale(1.1);
-    }
-    
-    .movie h2 {
-        font-size: 1.2rem;
-        margin: 10px 0 5px;
-        color: #fff;
-        font-family: 'Playfair Display', serif;
-        text-decoration: wavy;
-    }
-    
-    .movie p {
-        font-size: 1rem;
-        color: #ccc;
-        text-decoration: none;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    .movie-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        text-decoration: none;
-    }
-    
-    .modal-content {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-        width: 90%;
-        max-width: 600px;
-        position: relative;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        animation: fadeIn 0.3s ease-in-out;
-        text-decoration: none;
-    }
-    
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    .modal-content img {
-        max-width: 100%;
-        max-height: 300px;
-        width: auto;
-        height: auto;
-        margin: 10px 0;
-        border-radius: 5px;
-        object-fit: cover;
-    }
-    
-    .modal-content p {
-        font-size: 1rem;
-        margin: 10px 0;
-    }
-    
-    .modal-content a {
-        color: #070e13;
-        text-decoration: none;
-        font-weight: bold;
-    }
-    
-    .modal-content a:hover {
-        text-decoration: none;
-    }
-    
-    .show button:hover {
-        background-color: #5c2fff;
-        transform: scale(1.1);
-    }
-    
-    .movie-details {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        /* Adjust gap as needed */
-        background-color: #111;
-        /* Optional: match your background color */
-        color: #fff;
-        /* Optional: text color */
-        padding: 20px;
-        /* Optional: spacing around the content */
-        border-radius: 10px;
-        /* Optional: add rounded corners */
-        max-width: 800px;
-        /* Optional: set a max width */
-        margin: auto;
-        /* Center horizontally on the page */
-    }
-    
-    .movie-details img {
-        max-width: 200px;
-        /* Adjust the image size */
-        border-radius: 10px;
-        /* Optional: add rounded corners to the image */
-    }
-    
-    .movie-details .details {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+}
+
+.modal-content img {
+    max-width: 100%;
+    max-height: 320px;
+    width: auto;
+    height: auto;
+    margin: var(--sp-md) auto;
+    border-radius: var(--r-md);
+    object-fit: cover;
+}
+
+.modal-content p {
+    font-size: 0.92rem;
+    color: var(--clr-text-muted);
+    margin: var(--sp-sm) 0;
+}
+
+.modal-content a {
+    color: var(--clr-accent);
+    font-weight: 700;
+}
+
+.modal-content a:hover {
+    color: #f5d78f;
+}
+
+.close-button {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--clr-text-muted);
+    font-weight: 300;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.close-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--clr-text);
+}

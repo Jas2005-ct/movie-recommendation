@@ -1,25 +1,37 @@
-{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/emo_cap.css' %}"> {% endblock %}
-<main>
+{% extends 'header.html' %}
+{% load static %}
 
-    <option value="a to z"></option>
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/emo_cap.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="emotion-results-wrapper" style="padding: var(--sp-xl); text-align: center;">
 
     <section class="featured">
-        <h1>Movies Related to Your Emotion: {{emotion}}</h1>
+        <h1 class="section-heading" style="margin-bottom: var(--sp-lg);">Movies Related to Your Emotion:
+            <span>{{emotion}}</span></h1>
+
         <div class="movies">
-            {% if movies %} {% for tits in movies %}
+            {% if movies %}
+            {% for tits in movies %}
             <div class="movie">
                 <a href="{% url 'mov_detail' id=tits.id %}">
-                    <img src="{{tits.img.url}}">
+                    <img src="{{tits.img.url}}" alt="{{tits.name}} poster">
                 </a>
-                <h2>{{tits.name}} </h2>
-                <p>{{tits.rate}}</p>
-                <p class=" year ">{{tits.year}}</p>
-            </div> {% endfor %} </div>
-        {% else %}
-        <p>No movies found for this emotion. Please try again later.</p>
-        {% endif %}
+                <h2>{{tits.name}}</h2>
+                <div style="margin-top: 10px;">
+                    <span class="badge">{{tits.year}}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="padding: var(--sp-xl); color: var(--clr-text-muted);">
+                <p>No movies found for this emotion. Please try again later.</p>
+            </div>
+            {% endif %}
+        </div>
     </section>
 
-</main>
-{%endblock%}
+</div>
+{% endblock %}
