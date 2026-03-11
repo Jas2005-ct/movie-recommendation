@@ -6,20 +6,22 @@
 {% endblock %}
 
 {% block content %}
-<main style="padding: var(--sp-xl);">
-    <h1 class="section-heading" style="text-align: center; margin-bottom: var(--sp-lg);">Browse by <span>Category</span>
-    </h1>
-    <section class="featured">
-        <div class="movies">
-            {% for c in ca %}
-            <div class="movie">
-                <a href="{{c.a}}">
-                    <img src="{% static 'images/'|add:c.img %}" alt="{{c.name}}">
-                </a>
-                <h2>{{c.name}}</h2>
-            </div>
-            {% endfor %}
+<main class="container">
+    <div class="section-header">
+        <h2 class="section-heading">Browse by <span>Category</span></h2>
+    </div>
+
+    <div class="movies-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+        {% for c in ca %}
+        <div class="movie-card"
+            style="height: 180px; justify-content: flex-end; padding: var(--sp-lg); background: linear-gradient(135deg, rgba(8, 12, 20, 0.95) 0%, rgba(232, 184, 75, 0.1) 100%); border: 1px solid var(--clr-border-dim);">
+            <a href="#" class="poster-link" style="position: absolute; inset: 0; z-index: 10;"></a>
+            <h3
+                style="margin: 0 0 8px 0; font-family: var(--font-display); font-size: 1.8rem; text-shadow: 0 4px 12px rgba(0,0,0,0.5); color: var(--clr-accent);">
+                {{ c.title }}</h3>
+            <p style="margin: 0; font-size: 0.95rem; color: var(--clr-text-muted);">{{ c.desc }}</p>
         </div>
-    </section>
+        {% endfor %}
+    </div>
 </main>
 {% endblock %}

@@ -1,30 +1,49 @@
- {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/show.css' %}"> {% endblock %}
-<main>
-    <section class="featured">
-        <h1>Featured Movies</h1>
-        </h1>
+{% extends 'header.html' %}
+{% load static %}
+
+{% block content %}
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}">
+{% endblock %}
+
+<main class="container">
+    <div class="section-header">
+        <h2 class="section-heading">Featured <span>TV Shows</span></h2>
         <form class="srt" method="GET" action="{% url 'show' %}">
-            <select name="sort" onchange="this.form.submit()">
-            <option value="">Select Option</option>
-            <option value="year">Year</option>
-            <option value="az">A to Z</option>
-        </select>
+            <select name="sort" onchange="this.form.submit()" class="glass-select">
+                <option value="">Sort By</option>
+                <option value="year">Release Year</option>
+                <option value="az">Highest Rated</option>
+            </select>
         </form>
-    </section>
-    <div class="movies">
+    </div>
+
+    <div class="movies-grid">
         {% for tits in sh %}
-        <div class="movie">
-            <a href="{% url 'show_det' id=tits.id %}">
-                <img src="{{tits.img.url}}">
+        <div class="movie-card">
+            <!-- No distinct tv detail page yet so linking to missing details url but mapped to a hash to avoid 500 error -->
+            <a href="#" class="poster-link">
+                <div class="poster-wrapper">
+                    {% if tits.poster %}
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                    {% endif %}
+                    <div class="overlay-glass">
+                        <span class="view-text">Featured</span>
+                    </div>
+                </div>
             </a>
-            <h2>{{tits.name}} </h2>
-            <p>{{tits.rate}}</p>
-            <p class=" year ">{{tits.year_f}}</p>
-            <p>{{tits.ep}}</p>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year_f}}</span>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
 
 </main>
-{%endblock%}
+{% endblock %}

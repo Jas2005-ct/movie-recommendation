@@ -106,3 +106,24 @@ class TMDBService:
             return data
             
         return {"error": "Failed to fetch genres", "status_code": response.status_code}
+
+    @classmethod
+    def get_popular_tv(cls, page=1):
+        """
+        Fetch popular TV shows. Caches results for 1 hour.
+        """
+        cache_key = f"tmdb_popular_tv_page_{page}"
+        cached_data = cache.get(cache_key)
+        
+        if cached_data:
+            return cached_data
+            
+        url = f"{cls.BASE_URL}/tv/popular{cls._get_api_key_param()}&language=en-US&page={page}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            cache.set(cache_key, data, 3600)
+            return data
+            
+        return {"error": "Failed to fetch TV from TMDB", "status_code": response.status_code}

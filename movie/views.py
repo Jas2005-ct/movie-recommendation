@@ -154,3 +154,135 @@ class ReviewListCreateView(APIView):
         
         serializer = ReviewSerializer(review)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# ------------------------------------------------------------------------
+# HTML Template Views
+# ------------------------------------------------------------------------
+from django.views.generic import TemplateView
+
+class HomeView(TemplateView):
+    template_name = 'first.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Fetch popular movies from our existing service
+        tmdb_data = TMDBService.get_popular_movies(page=1)
+        
+        # Format the data to match what the template expects (or rewrite the template, but we will format here for now)
+        # The template expects `tit` which is a list of objects with `id`, `name`, `rate`, `year`, `img.url`
+        movies = []
+        if "results" in tmdb_data:
+            for item in tmdb_data["results"][:12]:  # Show top 12
+                movies.append({
+                    'id': item.get('id'),
+                    'name': item.get('title') or item.get('name'),
+                    'rate': round(item.get('vote_average', 0), 1),
+                    'year': item.get('release_date', '')[:4] if item.get('release_date') else '',
+                    'poster': f"https://image.tmdb.org/t/p/w500{item.get('poster_path')}" if item.get('poster_path') else '',
+                })
+                
+        context['tit'] = movies
+        return context
+
+class MovieDetailHTMLView(TemplateView):
+    template_name = 'details.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tmdb_id = self.kwargs.get('tmdb_id')
+        data = TMDBService.get_movie_details(tmdb_id)
+        
+        # Format the data to match what the 'details.html' template expects
+        if "error" not in data:
+            director = ""
+            cast = []
+            if 'credits' in data:
+                for crew in data['credits'].get('crew', []):
+                    if crew.get('job') == 'Director':
+                        director = crew.get('name')
+                        break
+                for actor in data['credits'].get('cast', [])[:3]:
+                    cast.append(actor.get('name'))
+            
+            trailer = ""
+            if 'videos' in data:
+                for video in data['videos'].get('results', []):
+                    if video.get('type') == 'Trailer' and video.get('site') == 'YouTube':
+                        trailer = f"https://www.youtube.com/watch?v={video.get('key')}"
+                        break
+
+            context['det'] = {
+                'id': data.get('id'),
+                'name': data.get('title'),
+                'release_date': data.get('release_date'),
+                'director': {'director': director},
+                'actor': {'actor': ", ".join(cast)},
+                'rate': round(data.get('vote_average', 0), 1),
+                'tagline': data.get('tagline', ''),
+                'description': data.get('overview', ''),
+                'watch_trailer': trailer,
+                'img': {'url': f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get('poster_path') else ''}
+            }
+            context['genres'] = [{'genre': g.get('name')} for g in data.get('genres', [])]
+            
+        return context
+
+class EmotionCaptureHTMLView(TemplateView):
+    template_name = 'emotion_cap.html'
+
+class CategoryHTMLView(TemplateView):
+    template_name = 'category.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Statically defining categories that TMDB supports for movie lists
+        categories = [
+            {'category_id': 'popular', 'title': 'Popular', 'desc': 'What everyone is watching'},
+            {'category_id': 'top_rated', 'title': 'Top Rated', 'desc': 'All time classics and masterpieces'},
+            {'category_id': 'upcoming', 'title': 'Upcoming', 'desc': 'Coming to theaters soon'},
+            {'category_id': 'now_playing', 'title': 'Now Playing', 'desc': 'Currently in theaters'}
+        ]
+        context['ca'] = categories
+        return context
+
+class GenreHTMLView(TemplateView):
+    template_name = 'genre.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Fetch genre mappings from TMDB
+        tmdb_data = TMDBService.get_genre_list()
+        
+        genres = []
+        if "genres" in tmdb_data:
+            # We don't have images for genres from TMDB, so we will assign a placeholder or mapped static image later in template
+            for item in tmdb_data["genres"]:
+                genres.append({
+                    'genre_id': item.get('id'),
+                    'genre': item.get('name')
+                })
+                
+        context['cat'] = genres
+        return context
+
+class TVShowHTMLView(TemplateView):
+    template_name = 'Tvshow.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Fetch popular TV shows
+        tmdb_data = TMDBService.get_popular_tv(page=1)
+        
+        shows = []
+        if "results" in tmdb_data:
+            for item in tmdb_data["results"][:12]:
+                shows.append({
+                    'id': item.get('id'),
+                    'name': item.get('name') or item.get('original_name'),
+                    'rate': round(item.get('vote_average', 0), 1),
+                    'year_f': item.get('first_air_date', '')[:4] if item.get('first_air_date') else '',
+                    'poster': f"https://image.tmdb.org/t/p/w500{item.get('poster_path')}" if item.get('poster_path') else '',
+                })
+                
+        context['sh'] = shows
+        return context

@@ -1,27 +1,60 @@
- {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/index.css' %}"> {% endblock %}
-<section class="featured">
-    <h1><a href="{% url 'index' %}">Feature Movies</a>/<a href="{% url 'old_mov' %}">Retro Movies</a>
-    </h1>
-    <form class="srt" method="GET" action="{% url 'index' %}">
-        <select name="sort" onchange="this.form.submit()">
-            <option value="">Select Option</option>
-            <option value="year">Year</option>
-            <option value="az">A to Z</option>
-        </select>
-    </form>
-</section>
-<div class="movies">
-    {% for tits in tit %}
-    <div class="movie">
-        <a href="{% url 'mov_detail' id=tits.id %}">
-            <img src="{{tits.img.url}}">
-        </a>
-        <h2>{{tits.name}} </h2>
-        <p>{{tits.rate}}</p>
-        <p class=" year ">{{tits.year}}</p>
+{% extends 'header.html' %}
+{% load static %}
+{% static "images" as baseUrl %}
+
+{% block content %}
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}">
+{% endblock %}
+
+<!-- Hero Section -->
+<section class="hero-banner"
+    style="background-image: linear-gradient(to top, var(--clr-bg-deep) 0%, rgba(8, 12, 20, 0.4) 100%), url('{{ tit.0.poster }}');">
+    <div class="hero-content">
+        <span class="badge">#1 Popular Today</span>
+        <h1 class="hero-title">{{ tit.0.name }}</h1>
+        <div class="hero-meta">
+            <span class="rating">★ {{ tit.0.rate }}</span>
+            <span class="year">{{ tit.0.year }}</span>
+        </div>
+        <a href="{% url 'movie_detail' tmdb_id=tit.0.id %}" class="btn-primary">View Details</a>
     </div>
-    {% endfor %}
+</section>
+
+<div class="container">
+    <div class="section-header">
+        <h2 class="section-heading">Trending <span>Now</span></h2>
+        <form class="srt" method="GET" action="{% url 'index' %}">
+            <select name="sort" onchange="this.form.submit()" class="glass-select">
+                <option value="">Sort By</option>
+                <option value="year">Release Year</option>
+                <option value="rating">Top Rated</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="movies-grid">
+        {% for tits in tit %}
+        <div class="movie-card">
+            <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
+                <div class="poster-wrapper">
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    <div class="overlay-glass">
+                        <span class="view-text">View Details</span>
+                    </div>
+                </div>
+            </a>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year}}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-<script src="{% static 'js/script.js' %} "></script>
+
+<script src="{% static 'js/script.js' %}"></script>
 {%endblock%}
