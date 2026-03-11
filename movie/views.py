@@ -163,25 +163,49 @@ from django.views.generic import TemplateView
 class HomeView(TemplateView):
     template_name = 'first.html'
     
+    def _format_movies(self, results, limit=12):
+        movies = []
+        for item in results[:limit * 2]:  # scan more to fill up after filtering
+            movie_id = item.get('id')
+            # Skip any movie that has no id - would cause NoReverseMatch in template
+            if not movie_id:
+                continue
+            movies.append({
+                'id': movie_id,
+                'name': item.get('title') or item.get('name', 'Unknown'),
+                'rate': round(item.get('vote_average', 0), 1),
+                'year': item.get('release_date', '')[:4] if item.get('release_date') else '',
+                'poster': f"https://image.tmdb.org/t/p/w500{item.get('poster_path')}" if item.get('poster_path') else '',
+            })
+            if len(movies) >= limit:
+                break
+        return movies
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Fetch popular movies from our existing service
-        tmdb_data = TMDBService.get_popular_movies(page=1)
         
-        # Format the data to match what the template expects (or rewrite the template, but we will format here for now)
-        # The template expects `tit` which is a list of objects with `id`, `name`, `rate`, `year`, `img.url`
-        movies = []
-        if "results" in tmdb_data:
-            for item in tmdb_data["results"][:12]:  # Show top 12
-                movies.append({
-                    'id': item.get('id'),
-                    'name': item.get('title') or item.get('name'),
-                    'rate': round(item.get('vote_average', 0), 1),
-                    'year': item.get('release_date', '')[:4] if item.get('release_date') else '',
-                    'poster': f"https://image.tmdb.org/t/p/w500{item.get('poster_path')}" if item.get('poster_path') else '',
-                })
-                
-        context['tit'] = movies
+        # Fetch Bollywood and South Indian movies IN PARALLEL to cut load time ~50%
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_bollywood = executor.submit(TMDBService.get_indian_movies, 1)
+            future_south = executor.submit(TMDBService.get_south_indian_movies, 1)
+            bollywood_data = future_bollywood.result()
+            south_data = future_south.result()
+        
+        bollywood = self._format_movies(bollywood_data.get('results', []), limit=8)
+        south = self._format_movies(south_data.get('results', []), limit=8)
+        
+        # Combine for the hero section, deduplicate by id
+        seen_ids = set()
+        all_movies = []
+        for m in bollywood + south:
+            if m['id'] not in seen_ids:
+                seen_ids.add(m['id'])
+                all_movies.append(m)
+        
+        context['tit'] = all_movies
+        context['bollywood'] = bollywood
+        context['south_indian'] = south
         return context
 
 class MovieDetailHTMLView(TemplateView):
@@ -191,7 +215,6 @@ class MovieDetailHTMLView(TemplateView):
         context = super().get_context_data(**kwargs)
         tmdb_id = self.kwargs.get('tmdb_id')
         data = TMDBService.get_movie_details(tmdb_id)
-        
         # Format the data to match what the 'details.html' template expects
         if "error" not in data:
             director = ""
@@ -263,6 +286,7 @@ class GenreHTMLView(TemplateView):
                 })
                 
         context['cat'] = genres
+
         return context
 
 class TVShowHTMLView(TemplateView):
@@ -270,12 +294,12 @@ class TVShowHTMLView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Fetch popular TV shows
-        tmdb_data = TMDBService.get_popular_tv(page=1)
+        # Fetch popular Indian TV shows
+        tmdb_data = TMDBService.get_indian_tv(page=1)
         
         shows = []
         if "results" in tmdb_data:
-            for item in tmdb_data["results"][:12]:
+            for item in tmdb_data["results"][:16]:
                 shows.append({
                     'id': item.get('id'),
                     'name': item.get('name') or item.get('original_name'),
@@ -286,3 +310,41 @@ class TVShowHTMLView(TemplateView):
                 
         context['sh'] = shows
         return context
+
+
+class GenreDetailView(TemplateView):
+    template_name = 'genre_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        genre_id = self.kwargs.get('genre_id')
+        
+        # Fetch movies for this genre
+        tmdb_data = TMDBService.get_movies_by_genre(genre_id, page=1)
+        
+        movies = []
+        if "results" in tmdb_data:
+            for item in tmdb_data["results"][:16]:
+                movies.append({
+                    'id': item.get('id'),
+                    'name': item.get('title') or item.get('name'),
+                    'rate': round(item.get('vote_average', 0), 1),
+                    'year': item.get('release_date', '')[:4] if item.get('release_date') else '',
+                    'poster': f"https://image.tmdb.org/t/p/w500{item.get('poster_path')}" if item.get('poster_path') else '',
+                })
+                
+        context['movies'] = movies
+        
+        # Fetch genre name
+        genres_data = TMDBService.get_genre_list()
+        genre_name = "Genre"
+        if "genres" in genres_data:
+            for g in genres_data["genres"]:
+                if str(g.get('id')) == str(genre_id):
+                    genre_name = g.get('name')
+                    break
+                    
+        context['genre_name'] = genre_name
+        return context
+    
+    

@@ -33,7 +33,20 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 # TMDB API Key
 TMDB_API_KEY = os.environ.get('TMDB_API_KEY', '')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+# Cache — use file-based so it SURVIVES server restarts (unlike LocMemCache default)
+# This means the first visit after a movie detail page will be fast from the 2nd visit onwards
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, '.django_cache'),
+        'TIMEOUT': 3600,  # 1 hour default
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
 
 
 # Application definition

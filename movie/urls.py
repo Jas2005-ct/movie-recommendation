@@ -8,6 +8,7 @@ urlpatterns = [
     path('camera/', views.EmotionCaptureHTMLView.as_view(), name='camera_page'),
     path('category/', views.CategoryHTMLView.as_view(), name='sort'),
     path('genre/', views.GenreHTMLView.as_view(), name='genre'),
+    path('genre/<int:genre_id>/', views.GenreDetailView.as_view(), name='genre_detail'),
     path('tv-shows/', views.TVShowHTMLView.as_view(), name='show'),
 
     # --- JSON API Routes ---

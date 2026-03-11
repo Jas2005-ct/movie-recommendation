@@ -1,17 +1,17 @@
 {% extends 'header.html' %}
 {% load static %}
-{% static "images" as baseUrl %}
 
 {% block content %}
 {% block sepr_css %}
 <link rel="stylesheet" href="{% static 'styles/index.css' %}">
 {% endblock %}
 
-<!-- Hero Section -->
+<!-- Hero Section — only render if the first movie has a valid id -->
+{% if tit.0.id %}
 <section class="hero-banner"
-    style="background-image: linear-gradient(to top, var(--clr-bg-deep) 0%, rgba(8, 12, 20, 0.4) 100%), url('{{ tit.0.poster }}');">
+    style="background-image: linear-gradient(to top, var(--clr-bg-deep) 0%, rgba(8, 12, 20, 0.4) 100%), url('{{ tit.0.poster }}'); background-size: cover; background-position: center;">
     <div class="hero-content">
-        <span class="badge">#1 Popular Today</span>
+        <span class="badge">🎬 Trending in India</span>
         <h1 class="hero-title">{{ tit.0.name }}</h1>
         <div class="hero-meta">
             <span class="rating">★ {{ tit.0.rate }}</span>
@@ -20,25 +20,26 @@
         <a href="{% url 'movie_detail' tmdb_id=tit.0.id %}" class="btn-primary">View Details</a>
     </div>
 </section>
+{% endif %}
 
 <div class="container">
-    <div class="section-header">
-        <h2 class="section-heading">Trending <span>Now</span></h2>
-        <form class="srt" method="GET" action="{% url 'index' %}">
-            <select name="sort" onchange="this.form.submit()" class="glass-select">
-                <option value="">Sort By</option>
-                <option value="year">Release Year</option>
-                <option value="rating">Top Rated</option>
-            </select>
-        </form>
-    </div>
 
+    <!-- Bollywood Section -->
+    {% if bollywood %}
+    <div class="section-header" style="margin-top: var(--sp-2xl);">
+        <h2 class="section-heading">🎥 Bollywood <span>Hits</span></h2>
+    </div>
     <div class="movies-grid">
-        {% for tits in tit %}
+        {% for tits in bollywood %}
+        {% if tits.id %}
         <div class="movie-card">
             <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
                 <div class="poster-wrapper">
+                    {% if tits.poster %}
                     <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                    {% endif %}
                     <div class="overlay-glass">
                         <span class="view-text">View Details</span>
                     </div>
@@ -52,9 +53,46 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- South Indian Section -->
+    {% if south_indian %}
+    <div class="section-header" style="margin-top: var(--sp-2xl);">
+        <h2 class="section-heading">🌟 South Indian <span>Blockbusters</span></h2>
+    </div>
+    <div class="movies-grid">
+        {% for tits in south_indian %}
+        {% if tits.id %}
+        <div class="movie-card">
+            <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
+                <div class="poster-wrapper">
+                    {% if tits.poster %}
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                    {% endif %}
+                    <div class="overlay-glass">
+                        <span class="view-text">View Details</span>
+                    </div>
+                </div>
+            </a>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year}}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </div>
 
 <script src="{% static 'js/script.js' %}"></script>
-{%endblock%}
+{% endblock %}

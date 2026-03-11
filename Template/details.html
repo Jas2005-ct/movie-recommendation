@@ -7,6 +7,7 @@
 {% endblock %}
 
 <main>
+    {% if det %}
     <section class="movie-details">
         <h1>{{ det.name }}</h1>
         <div class="details-wrapper">
@@ -39,7 +40,8 @@
                 <p style="color: var(--clr-text); line-height: 1.6;">{{ det.description }}</p>
 
                 {% if det.watch_trailer %}
-                <a href="{{ det.watch_trailer }}" target="_blank" rel="noopener noreferrer">
+                <a href="{{ det.watch_trailer }}" target="_blank" rel="noopener noreferrer" class="btn-primary"
+                    style="display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; text-decoration: none;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -73,8 +75,68 @@
             <textarea id="review_text" name="review_text" placeholder="What did you think of the movie?"
                 required></textarea>
             <br>
-            <button type="button" onclick="alert('Reviews API integration coming soon!')">Publish Review</button>
+            <button type="button" id="submit-review-btn" onclick="submitReview()">Publish Review</button>
         </form>
+        <div id="review-message" style="margin-top: 12px; display: none;"></div>
     </section>
+
+    {% else %}
+    <!-- Data wasn't available — TMDB call may have failed or is very slow -->
+    <div style="text-align: center; padding: var(--sp-2xl); color: var(--clr-text-muted);">
+        <div style="font-size: 4rem; margin-bottom: var(--sp-md); opacity: 0.4;">🎬</div>
+        <h2 style="color: var(--clr-text); margin-bottom: var(--sp-sm);">Couldn't load movie details</h2>
+        <p>The movie data could not be fetched right now. This may be a temporary network issue with TMDB.</p>
+        <a href="javascript:location.reload()" class="btn-primary"
+            style="display: inline-block; margin-top: var(--sp-lg);">Try Again</a>
+        <a href="/" class="btn-primary"
+            style="display: inline-block; margin-top: var(--sp-lg); margin-left: var(--sp-md); background: transparent; border: 1px solid var(--clr-accent);">Go
+            Home</a>
+    </div>
+    {% endif %}
 </main>
+
+<script>
+    function submitReview() {
+        const tmdbId = {{ det.id|default: "null"
+    }};
+    const rating = document.querySelector('input[name="rating"]:checked')?.value;
+    const text = document.getElementById('review_text').value;
+    const msgEl = document.getElementById('review-message');
+
+    if (!rating) { alert('Please select a star rating!'); return; }
+    if (!text.trim()) { alert('Please write a review!'); return; }
+
+    fetch('/api/reviews/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: JSON.stringify({
+            tmdb_id: tmdbId,
+            title: '{{ det.name|default:"" }}',
+            rating: parseInt(rating),
+            review_text: text
+        })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.id) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = 'var(--clr-accent)';
+                msgEl.textContent = '✅ Your review has been published!';
+                document.getElementById('review_text').value = '';
+            } else {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e88';
+                msgEl.textContent = '❌ Error: ' + (data.error || 'Could not submit review.');
+            }
+        })
+        .catch(() => {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#e88';
+            msgEl.textContent = '❌ Network error. Please try again.';
+        });
+}
+</script>
 {% endblock %}
