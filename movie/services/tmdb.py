@@ -51,7 +51,7 @@ class TMDBService:
         """
         Fetch popular movies globally. Caches results for 1 hour.
         """
-        url = f"{cls.BASE_URL}/movie/popular{cls._get_api_key_param()}&language=en-US&page={page}"
+        url = f"{cls.BASE_URL}/movie/list{cls._get_api_key_param()}&language=en-US&page={page}"
         cache_key = f"tmdb_popular_movies_page_{page}"
         return cls._fetch_data(url, cache_key, 3600)
 
@@ -105,7 +105,7 @@ class TMDBService:
     # -----------------------------------------------------------------------
 
     @classmethod
-    def get_indian_movies(cls, page=1):
+    def get_indian_movies(cls, page=5):
         """
         Fetch popular Bollywood (Hindi) movies from India. Caches for 1 hour.
         """
