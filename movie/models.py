@@ -12,11 +12,14 @@ class Genre(models.Model):
     TMDB genre reference table. Populated once by sync_movies command.
     e.g. id=28 → 'Action', id=18 → 'Drama'
     """
-    tmdb_id  = models.IntegerField(primary_key=True)
+    id  = models.IntegerField(primary_key=True)
     name     = models.CharField(max_length=100, unique=True)
 
     class Meta:
-        ordering = ['name']
+        db_table         = 'genre'
+        verbose_name     = 'Genre'
+        verbose_name_plural = 'Genres'
+        ordering         = ['name']
 
     def __str__(self):
         return self.name
@@ -143,7 +146,11 @@ class MovieGenre(models.Model):
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE, db_index=True)
 
     class Meta:
-        unique_together = ('movie', 'genre')
+        db_table         = 'movie_genre'
+        verbose_name     = 'Movie Genre'
+        verbose_name_plural = 'Movie Genres'
+        unique_together  = ('movie', 'genre')
+        ordering         = ['movie__title', 'genre__name']
 
     def __str__(self):
         return f"{self.movie.title} → {self.genre.name}"
