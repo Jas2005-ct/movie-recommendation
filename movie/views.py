@@ -111,6 +111,11 @@ class MovieDetailHTMLView(TemplateView):
                 'name':          movie.title,
                 'release_date':  movie.release_date,
                 'director':      movie.director,
+                'music_director': movie.music_director,
+                'main_actor':    movie.main_actor,
+                'main_actress':  movie.main_actress,
+                'villain':       movie.villain,
+                'comedian':      movie.comedian,
                 'actor':         movie.cast,
                 'rate':          round(movie.vote_average, 1),
                 'tagline':       movie.tagline,
@@ -141,7 +146,14 @@ class GenreHTMLView(TemplateView):
             .distinct()
             .order_by('name')
         )
-        context['cat'] = [{'genre_id': g.id, 'genre': g.name} for g in genres]
+        context['cat'] = [
+            {
+                'genre_id': g.id, 
+                'genre': g.name, 
+                'image_url': g.image.url if g.image else None
+            } 
+            for g in genres
+        ]
         return context
 
 
@@ -194,7 +206,7 @@ class TVShowHTMLView(TemplateView):
             Movie.objects
             .filter(content_type='tv', tmdb_id__isnull=False)
         )
-
+        
         if sort_by == 'year':
             shows_qs = shows_qs.order_by('-release_date', '-popularity')
         elif sort_by == 'az':
@@ -208,6 +220,37 @@ class TVShowHTMLView(TemplateView):
         context['page_obj'] = page_obj
         return context
 
+class TVShowDetailView(TemplateView):
+    template_name = 'show_details.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tmdb_id = self.kwargs.get('tmdb_id')
+        movie   = get_object_or_404(Movie, tmdb_id=tmdb_id)
+        if movie.poster_url:
+            context['det'] = {
+                'id':            movie.tmdb_id,
+                'name':          movie.title,
+                'release_date':  movie.release_date,
+                'director':      movie.director,
+                'music_director': movie.music_director,
+                'main_actor':    movie.main_actor,
+                'main_actress':  movie.main_actress,
+                'villain':       movie.villain,
+                'comedian':      movie.comedian,
+                'actor':         movie.cast,
+                'rate':          round(movie.vote_average, 1),
+                'tagline':       movie.tagline,
+                'description':   movie.overview,
+                'watch_trailer': movie.trailer_url,
+                'img':           {'url': movie.poster_url},
+                'backdrop':      movie.backdrop_url,
+            }
+            context['genres'] = [
+                {'genre': g.name, 'id': g.id}
+                for g in movie.genres.all()
+            ]
+        return context
 
 # =============================================================================
 #  CATEGORY PAGE  (static)
@@ -287,8 +330,7 @@ class MovieSearchView(TemplateView):
             from django.db.models import Q
             qs = Movie.objects.filter(
                 Q(title__icontains=query) | 
-                Q(director__icontains=query) |
-                Q(cast__icontains=query)
+                Q(crew__person__name__icontains=query)
             ).distinct()
         else:
             qs = Movie.objects.none()

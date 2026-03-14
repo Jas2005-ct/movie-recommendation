@@ -28,6 +28,7 @@
     {% if bollywood %}
     <div class="section-header" style="margin-top: var(--sp-2xl);">
         <h2 class="section-heading">🎥 Bollywood <span>Hits</span></h2>
+        <a href="{% url 'movie_list_category' category='bollywood' %}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: var(--radius-md);">View All</a>
     </div>
     <div class="movies-grid">
         {% for tits in bollywood %}
@@ -62,6 +63,7 @@
     {% if south_indian %}
     <div class="section-header" style="margin-top: var(--sp-2xl);">
         <h2 class="section-heading">🌟 South Indian <span>Blockbusters</span></h2>
+        <a href="{% url 'movie_list_category' category='south_indian' %}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: var(--radius-md);">View All</a>
     </div>
     <div class="movies-grid">
         {% for tits in south_indian %}

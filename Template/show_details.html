@@ -1,0 +1,116 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block content %}
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/details.css' %}">
+{% endblock %}
+
+<main>
+    {% if det %}
+    <section class="movie-details">
+        <h1>{{ det.name }}</h1>
+        <div class="details-wrapper">
+            <div class="movie-poster">
+                {% if det.img.url %}
+                <img src="{{ det.img.url }}" alt="{{ det.name }} Poster" loading="lazy">
+                {% else %}
+                <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                {% endif %}
+            </div>
+
+            <div class="movie-info">
+                {% if det.tagline %}
+                <p style="font-size: 1.2rem; font-style: italic; color: var(--clr-accent);">"{{ det.tagline }}"</p>
+                {% endif %}
+
+                <p><strong>Release Date:</strong> {{ det.release_date }}</p>
+                <p><strong>Genres:</strong>
+                    {% for genre in genres %}
+                    <span class="badge">{{ genre.genre }}</span>
+                    {% endfor %}
+                </p>
+                {% if det.director %}
+                <p><strong>Director:</strong> {{ det.director }}</p>
+                {% endif %}
+                {% if det.music_director %}
+                <p><strong>Music Director:</strong> {{ det.music_director }}</p>
+                {% endif %}
+                {% if det.main_actor %}
+                <p><strong>Main Actor:</strong> {{ det.main_actor }}</p>
+                {% endif %}
+                {% if det.main_actress %}
+                <p><strong>Main Actress:</strong> {{ det.main_actress }}</p>
+                {% endif %}
+                {% if det.villain %}
+                <p><strong>Villain:</strong> {{ det.villain }}</p>
+                {% endif %}
+                {% if det.comedian %}
+                <p><strong>Comedian:</strong> {{ det.comedian }}</p>
+                {% endif %}
+                {% if det.actor and not det.main_actor and not det.main_actress %}
+                <p><strong>Cast:</strong> {{ det.actor }}</p>
+                {% endif %}
+                <p><strong>Rating:</strong> ★ {{ det.rate }} / 10</p>
+
+                <div class="divider"></div>
+
+                <p><strong>Overview:</strong></p>
+                <p style="color: var(--clr-text); line-height: 1.6;">{{ det.description }}</p>
+
+                {% if det.watch_trailer %}
+                <a href="{{ det.watch_trailer }}" target="_blank" rel="noopener noreferrer" class="btn-primary"
+                    style="display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; text-decoration: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Watch Trailer
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <section class="review-section">
+        <h2>Submit Your Review</h2>
+        <form method="post" class="review-form">
+            {% csrf_token %}
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" required>
+                <label for="star5" title="5 stars"></label>
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4" title="4 stars"></label>
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3" title="3 stars"></label>
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2" title="2 stars"></label>
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1" title="1 star"></label>
+            </div>
+
+            <textarea id="review_text" name="review_text" placeholder="What did you think of the movie?"
+                required></textarea>
+            <br>
+            <button type="button" id="submit-review-btn" onclick="submitReview()">Publish Review</button>
+        </form>
+        <div id="review-message" style="margin-top: 12px; display: none;"></div>
+    </section>
+
+    {% else %}
+    <!-- Data wasn't available — TMDB call may have failed or is very slow -->
+    <div style="text-align: center; padding: var(--sp-2xl); color: var(--clr-text-muted);">
+        <div style="font-size: 4rem; margin-bottom: var(--sp-md); opacity: 0.4;">🎬</div>
+        <h2 style="color: var(--clr-text); margin-bottom: var(--sp-sm);">Couldn't load movie details</h2>
+        <p>The movie data could not be fetched right now. This may be a temporary network issue with TMDB.</p>
+        <a href="javascript:location.reload()" class="btn-primary"
+            style="display: inline-block; margin-top: var(--sp-lg);">Try Again</a>
+        <a href="/" class="btn-primary"
+            style="display: inline-block; margin-top: var(--sp-lg); margin-left: var(--sp-md); background: transparent; border: 1px solid var(--clr-accent);">Go
+            Home</a>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
