@@ -4,10 +4,14 @@ All data comes from local PostgreSQL via Django ORM.
 Context variables are serialized to dicts matching the existing template format.
 """
 from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
 from django.db import models
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views import View
+from textblob import TextBlob
+import json
 
-from .models import Movie, Genre, MovieGenre
+from .models import Movie, Genre, MovieGenre, Review
 
 
 # ---------------------------------------------------------------------------
@@ -43,8 +47,8 @@ Movie._meta._expire_cache()
 MovieGenre._meta._expire_cache()
 
 # Monkeypatch Movie to remove fields that don't exist in DB
-# Fields known to be missing: director, cast
-MISSING_MOVIE_FIELDS = ['director', 'cast']
+# Fields known to be missing: director, cast, cache_updated_at
+MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
 Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
 for f_name in MISSING_MOVIE_FIELDS:
     if hasattr(Movie, f_name):
@@ -148,7 +152,56 @@ class MovieDetailHTMLView(TemplateView):
             {'genre': g.name, 'id': g.tmdb_id}
             for g in movie.genres.all()
         ]
+        
+        # Add reviews to context
+        try:
+            context['reviews'] = movie.reviews.all().order_by('-created_at')
+        except Exception as e:
+            print(f"Error fetching reviews for {movie.tmdb_id}: {e}")
+            context['reviews'] = []
+        
         return context
+
+
+# =============================================================================
+#  REVIEW SUBMISSION API
+# =============================================================================
+
+class ReviewCreateView(View):
+    """
+    Handles AJAX POST requests from details.html to save a new review.
+    Calculates sentiment score on the fly.
+    """
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            tmdb_id     = data.get('tmdb_id')
+            rating      = data.get('rating')
+            review_text = data.get('review_text', '')
+
+            movie = get_object_or_404(Movie, tmdb_id=tmdb_id)
+
+            # Sentiment Analysis
+            sentiment = 0.0
+            if review_text:
+                blob = TextBlob(review_text)
+                sentiment = blob.sentiment.polarity
+
+            review = Review.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                movie=movie,
+                rating=rating,
+                review_text=review_text,
+                sentiment_score=sentiment
+            )
+
+            return JsonResponse({
+                'id': review.id,
+                'status': 'success',
+                'message': 'Review published successfully!'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 # =============================================================================

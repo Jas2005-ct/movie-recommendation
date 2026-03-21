@@ -10,4 +10,5 @@ urlpatterns = [
     path('genre/',                    views.GenreHTMLView.as_view(),        name='genre'),
     path('genre/<int:genre_id>/',     views.GenreDetailView.as_view(),      name='genre_detail'),
     path('tv-shows/',                 views.TVShowHTMLView.as_view(),       name='show'),
+    path('api/reviews/',              views.ReviewCreateView.as_view(),     name='add_review'),
 ]

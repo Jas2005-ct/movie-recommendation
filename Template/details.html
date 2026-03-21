@@ -54,10 +54,51 @@
     </section>
 
     <div class="divider"></div>
-
+    
     <section class="review-section">
+        <div class="reviews-header">
+            <h2>User Reviews</h2>
+            <p class="review-count">{% if reviews %}{{ reviews.count }} review{{ reviews.count|pluralize }}{% else %}No reviews yet{% endif %}</p>
+        </div>
+
+        <div id="reviews-list">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-meta">
+                    <span class="review-user">
+                        {% if review.user %}{{ review.user.username }}{% else %}Anonymous Visitor{% endif %}
+                    </span>
+                    <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="review-rating">
+                    {% for i in "12345" %}
+                        <span class="star {% if forloop.counter <= review.rating %}filled{% endif %}">★</span>
+                    {% endfor %}
+                </div>
+                <div class="review-content">
+                    {{ review.review_text }}
+                </div>
+                {% if review.sentiment_score is not None %}
+                <div class="sentiment-badge {% if review.sentiment_score > 0 %}positive{% elif review.sentiment_score < 0 %}negative{% else %}neutral{% endif %}" 
+                     title="Sentiment Score: {{ review.sentiment_score|floatformat:2 }}">
+                    {% if review.sentiment_score > 0.1 %}😊 Positive
+                    {% elif review.sentiment_score < -0.1 %}🙁 Negative
+                    {% else %}😐 Neutral
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="no-reviews">
+                <p>Be the first to review this movie!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="divider" style="margin: 40px 0;"></div>
+
         <h2>Submit Your Review</h2>
-        <form method="post" class="review-form">
+        <form method="post" class="review-form" id="review-form">
             {% csrf_token %}
             <div class="star-rating">
                 <input type="radio" id="star5" name="rating" value="5" required>
@@ -72,12 +113,11 @@
                 <label for="star1" title="1 star"></label>
             </div>
 
-            <textarea id="review_text" name="review_text" placeholder="What did you think of the movie?"
-                required></textarea>
+            <textarea id="review_text" name="review_text" placeholder="What did you think of the movie? Share your thoughts..." required></textarea>
             <br>
             <button type="button" id="submit-review-btn" onclick="submitReview()">Publish Review</button>
         </form>
-        <div id="review-message" style="margin-top: 12px; display: none;"></div>
+        <div id="review-message" style="margin-top: 16px; padding: 12px; border-radius: 8px; display: none; font-weight: 600;"></div>
     </section>
 
     {% else %}
@@ -97,46 +137,57 @@
 
 <script>
     function submitReview() {
-        const tmdbId = {{ det.id|default: "null"
-    }};
-    const rating = document.querySelector('input[name="rating"]:checked')?.value;
-    const text = document.getElementById('review_text').value;
-    const msgEl = document.getElementById('review-message');
+        const tmdbId = {{ det.id|default:"null" }};
+        const rating = document.querySelector('input[name="rating"]:checked')?.value;
+        const text = document.getElementById('review_text').value;
+        const msgEl = document.getElementById('review-message');
+        const btn = document.getElementById('submit-review-btn');
 
-    if (!rating) { alert('Please select a star rating!'); return; }
-    if (!text.trim()) { alert('Please write a review!'); return; }
+        if (!rating) { alert('Please select a star rating!'); return; }
+        if (!text.trim()) { alert('Please write a review!'); return; }
 
-    fetch('/api/reviews/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-        },
-        body: JSON.stringify({
-            tmdb_id: tmdbId,
-            title: '{{ det.name|default:"" }}',
-            rating: parseInt(rating),
-            review_text: text
+        btn.disabled = true;
+        btn.textContent = 'Publishing...';
+
+        fetch('/api/reviews/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                tmdb_id: tmdbId,
+                rating: parseInt(rating),
+                review_text: text
+            })
         })
-    })
-        .then(r => r.json())
-        .then(data => {
-            if (data.id) {
+            .then(r => r.json())
+            .then(data => {
                 msgEl.style.display = 'block';
-                msgEl.style.color = 'var(--clr-accent)';
-                msgEl.textContent = '✅ Your review has been published!';
-                document.getElementById('review_text').value = '';
-            } else {
+                if (data.status === 'success') {
+                    msgEl.style.backgroundColor = 'rgba(232, 184, 75, 0.15)';
+                    msgEl.style.color = 'var(--clr-accent)';
+                    msgEl.innerHTML = '✅ ' + data.message;
+                    document.getElementById('review_text').value = '';
+                    // Refresh page to show new review (simple approach)
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    msgEl.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                    msgEl.style.color = '#ff6b6b';
+                    msgEl.innerHTML = '❌ Error: ' + (data.error || 'Could not submit review.');
+                    btn.disabled = false;
+                    btn.textContent = 'Publish Review';
+                }
+            })
+            .catch((err) => {
                 msgEl.style.display = 'block';
-                msgEl.style.color = '#e88';
-                msgEl.textContent = '❌ Error: ' + (data.error || 'Could not submit review.');
-            }
-        })
-        .catch(() => {
-            msgEl.style.display = 'block';
-            msgEl.style.color = '#e88';
-            msgEl.textContent = '❌ Network error. Please try again.';
-        });
-}
+                msgEl.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+                msgEl.style.color = '#ff6b6b';
+                msgEl.innerHTML = '❌ Network error. Please try again.';
+                btn.disabled = false;
+                btn.textContent = 'Publish Review';
+                console.error(err);
+            });
+    }
 </script>
 {% endblock %}
