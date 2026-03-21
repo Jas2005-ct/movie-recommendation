@@ -257,24 +257,38 @@ class Command(BaseCommand):
                 time.sleep(SLEEP_BETWEEN_REQUESTS)
                 continue
 
-            # Director
-            director = ''
-            credits = data.get('credits', {})
-            for crew in credits.get('crew', []):
-                if crew.get('job') == 'Director':
-                    director = crew.get('name', '')
-                    break
-            # TV shows use 'created_by' for the director equivalent
-            if not director and data.get('created_by'):
-                director = data['created_by'][0].get('name', '') if data['created_by'] else ''
+            # Extract all important roles
+            important_roles = {
+                'Director': None,
+                'Music Director': None, # TMDB uses Original Music Composer usually
+                'Main Actor': None,
+                'Main Actress': None,
+                'Villain': None,
+                'Comedian': None,
+            }
 
-            # Top cast (max 5 names)
-            cast_names = [
-                actor.get('name', '')
-                for actor in credits.get('cast', [])[:5]
-                if actor.get('name')
-            ]
-            cast_str = ', '.join(cast_names)
+            credits = data.get('credits', {})
+            crew = credits.get('crew', [])
+            
+            # Find Director and Music Director
+            for c in crew:
+                job = c.get('job')
+                if job == 'Director' and not important_roles['Director']:
+                    important_roles['Director'] = c.get('name')
+                elif job in ['Original Music Composer', 'Music'] and not important_roles['Music Director']:
+                    important_roles['Music Director'] = c.get('name')
+                    
+            # TV shows use 'created_by' for the director equivalent
+            if not important_roles['Director'] and data.get('created_by'):
+                important_roles['Director'] = data['created_by'][0].get('name') if data['created_by'] else None
+
+            # Logic for actors (simplified to top 4 max)
+            cast = credits.get('cast', [])
+            if cast:
+                important_roles['Main Actor'] = cast[0].get('name') if len(cast) > 0 else None
+                important_roles['Main Actress'] = cast[1].get('name') if len(cast) > 1 else None
+                important_roles['Villain'] = cast[2].get('name') if len(cast) > 2 else None
+                important_roles['Comedian'] = cast[3].get('name') if len(cast) > 3 else None
 
             # Trailer (YouTube only)
             trailer_url = ''
@@ -283,6 +297,26 @@ class Command(BaseCommand):
                     trailer_url = f"https://www.youtube.com/watch?v={vid['key']}"
                     break
 
+            # Need to update movie record 
+            Movie.objects.filter(tmdb_id=tmdb_id).update(
+                trailer_url = trailer_url,
+                tagline     = data.get('tagline') or '',
+                overview    = data.get('overview') or movie_obj.overview,
+                vote_average= data.get('vote_average', movie_obj.vote_average),
+                vote_count  = data.get('vote_count', movie_obj.vote_count),
+                backdrop_path = data.get('backdrop_path') or movie_obj.backdrop_path,
+            )
+            
+            # Sync to MovieCrew table
+            from movie.models import Person, MovieCrew
+            for role, name in important_roles.items():
+                if name:
+                    person, _ = Person.objects.get_or_create(name=name)
+                    MovieCrew.objects.get_or_create(
+                        movie=movie_obj,
+                        person=person,
+                        role=role
+                    )
             # Update only available fields
             update_fields = {
                 'tagline':       data.get('tagline') or '',
