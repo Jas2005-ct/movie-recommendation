@@ -1,0 +1,29 @@
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/details.css' %}"> {% endblock %}
+<main>
+    <section class="movie-details">
+        <h1>{{det.name}}</h1>
+
+
+        <div class="details-wrapper">
+            <div class="movie-poster">
+                <img src="{{det.img.url}}" alt="{{ det.name }} Poster">
+            </div>
+            <center>
+                <div class="movie-info">
+                    <p><strong>Release Date:</strong>{{det.year_f}}</p>
+                    <p><strong>Genres:</strong> {{ det.genre }}
+                    </p>
+                    <p><strong>Description: </strong>{{det.description}}</p>
+                    <p><strong>Rating: </strong>{{det.rate}}</p>
+                    <p><strong>Streaming_platform: </strong>{{det.streaming_platform}}</p>
+                    <p><strong>Language: </strong>{{det.language}}</p>
+                    <a href="{{det.trailer_link}}" target="_blank ">Watch Trailer</a>
+                </div>
+
+        </div>
+        </center>
+
+    </section>
+</main>
+{%endblock%}

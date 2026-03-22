@@ -30,27 +30,8 @@
                     <span class="badge">{{ genre.genre }}</span>
                     {% endfor %}
                 </p>
-                {% if det.director %}
-                <p><strong>Director:</strong> {{ det.director }}</p>
-                {% endif %}
-                {% if det.music_director %}
-                <p><strong>Music Director:</strong> {{ det.music_director }}</p>
-                {% endif %}
-                {% if det.main_actor %}
-                <p><strong>Main Actor:</strong> {{ det.main_actor }}</p>
-                {% endif %}
-                {% if det.main_actress %}
-                <p><strong>Main Actress:</strong> {{ det.main_actress }}</p>
-                {% endif %}
-                {% if det.villain %}
-                <p><strong>Villain:</strong> {{ det.villain }}</p>
-                {% endif %}
-                {% if det.comedian %}
-                <p><strong>Comedian:</strong> {{ det.comedian }}</p>
-                {% endif %}
-                {% if det.actor and not det.main_actor and not det.main_actress %}
-                <p><strong>Cast:</strong> {{ det.actor }}</p>
-                {% endif %}
+                <p><strong>Director:</strong> {{ det.director.director }}</p>
+                <p><strong>Cast:</strong> {{ det.actor.actor }}</p>
                 <p><strong>Rating:</strong> ★ {{ det.rate }} / 10</p>
 
                 <div class="divider"></div>

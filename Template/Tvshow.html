@@ -18,18 +18,16 @@
         </form>
     </div>
 
-    {% include 'pagination.html' %}
-
     <div class="movies-grid">
         {% for tits in sh %}
         <div class="movie-card">
             <!-- No distinct tv detail page yet so linking to missing details url but mapped to a hash to avoid 500 error -->
-            {% if tits.id %}
-            <a href="{% url 'show_details' tits.id %}" class="poster-link">
-                {% endif %}
+            <a href="#" class="poster-link">
                 <div class="poster-wrapper">
                     {% if tits.poster %}
                     <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
                     {% endif %}
                     <div class="overlay-glass">
                         <span class="view-text">Featured</span>
@@ -47,6 +45,5 @@
         {% endfor %}
     </div>
 
-    {% include 'pagination.html' %}
 </main>
 {% endblock %}

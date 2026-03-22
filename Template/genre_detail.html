@@ -9,17 +9,7 @@
 <main class="container" style="padding-top: var(--sp-2xl);">
     <div class="section-header">
         <h2 class="section-heading">Movies for <span>{{ genre_name }}</span></h2>
-        <form class="srt" method="GET" action="">
-            <select name="sort" onchange="this.form.submit()" class="glass-select">
-                <option value="">Sort By</option>
-                <option value="year" {% if request.GET.sort == 'year' %}selected{% endif %}>Release Year</option>
-                <option value="az" {% if request.GET.sort == 'az' %}selected{% endif %}>Highest Rated</option>
-                <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Most Popular</option>
-            </select>
-        </form>
     </div>
-
-    {% include 'pagination.html' %}
 
     <div class="movies-grid">
         {% for tits in movies %}
@@ -51,6 +41,5 @@
         {% endfor %}
     </div>
 
-    {% include 'pagination.html' %}
 </main>
 {% endblock %}

@@ -19,7 +19,7 @@
         </a>
         <nav>
             <ul class="navigation">
-                <li><a href="{% url 'movie_list' %}">Movies</a></li>
+                <li><a href="{% url 'index' %}">Movies</a></li>
                 <li><a href="{% url 'show' %}">TV Shows</a></li>
                 <li><a href="{% url 'genre' %}">Genre</a></li>
                 <li><a href="{% url 'sort' %}">Category</a></li>
@@ -27,9 +27,9 @@
             </ul>
         </nav>
         {% block sear %}
-        <form method="GET" action="{% url 'search_results' %}">
+        <form method="GET" action="#">
             <input class="tex" type="text" name="query" placeholder="Search movies, shows…" value="{{ query }}">
-            <button class="sea" type="submit">Search</button>
+            <button class="sea" type="button">Search</button>
         </form>
         {% endblock %}
     </header>
