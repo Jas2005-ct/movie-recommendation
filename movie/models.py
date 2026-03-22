@@ -12,11 +12,17 @@ class Genre(models.Model):
     TMDB genre reference table. Populated once by sync_movies command.
     e.g. id=28 → 'Action', id=18 → 'Drama'
     """
-    tmdb_id  = models.IntegerField(primary_key=True)
+    # We use our own auto-increment ID as PK, but keep tmdb_id
+    id = models.AutoField(primary_key=True)
+    tmdb_id = models.IntegerField(unique=True, null=True, blank=True)
     name     = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(upload_to='genre_images', blank=True, null=True)
 
     class Meta:
-        ordering = ['name']
+        db_table         = 'genre'
+        verbose_name     = 'Genre'
+        verbose_name_plural = 'Genres'
+        ordering         = ['name']
 
     def __str__(self):
         return self.name
@@ -78,10 +84,8 @@ class Movie(models.Model):
     popularity    = models.FloatField(default=0.0, db_index=True)
 
     # ------------------------------------------------------------------
-    # Credits (denormalised for simple template rendering)
+    # Credits (Normalized through MovieCrew)
     # ------------------------------------------------------------------
-    director = models.CharField(max_length=255, blank=True, default='')
-    cast     = models.TextField(blank=True, default='')   # comma-separated top-3 actors
     trailer_url = models.URLField(max_length=512, blank=True, default='')
 
     # ------------------------------------------------------------------
@@ -128,11 +132,82 @@ class Movie(models.Model):
     def year(self):
         return self.release_date.year if self.release_date else ''
 
-    @property
-    def cast_list(self):
-        """Return cast as a Python list."""
-        return [a.strip() for a in self.cast.split(',') if a.strip()]
+    def _get_crew_names(self, role):
+        return ", ".join(self.crew.filter(role=role).values_list('person__name', flat=True))
 
+    @property
+    def director(self):
+        return self._get_crew_names('Director')
+
+    @property
+    def music_director(self):
+        return self._get_crew_names('Music Director')
+
+    @property
+    def main_actor(self):
+        return self._get_crew_names('Main Actor')
+
+    @property
+    def main_actress(self):
+        return self._get_crew_names('Main Actress')
+
+    @property
+    def villain(self):
+        return self._get_crew_names('Villain')
+
+    @property
+    def comedian(self):
+        return self._get_crew_names('Comedian')
+
+    @property
+    def cast(self):
+        # Concatenate main actor, actress, villain, comedian for a simple cast string
+        from itertools import filterfalse
+        roles = filter(None, [self.main_actor, self.main_actress, self.villain, self.comedian])
+        return ", ".join(roles)
+
+
+class Person(models.Model):
+    """
+    Normalized person model to represent cast and crew.
+    """
+    name = models.CharField(max_length=255, unique=True)
+    
+    class Meta:
+        db_table = 'person'
+        verbose_name = 'Person'
+        verbose_name_plural = 'People'
+        ordering = ['name']
+        
+    def __str__(self):
+        return self.name
+
+class MovieCrew(models.Model):
+    """
+    Through-table for normalized crew relationships.
+    """
+    ROLE_CHOICES = [
+        ('Director', 'Director'),
+        ('Music Director', 'Music Director'),
+        ('Main Actor', 'Main Actor'),
+        ('Main Actress', 'Main Actress'),
+        ('Villain', 'Villain'),
+        ('Comedian', 'Comedian'),
+    ]
+
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='crew')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='movie_roles')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+
+    class Meta:
+        db_table = 'movie_crew'
+        verbose_name = 'Movie Crew Member'
+        verbose_name_plural = 'Movie Crew Members'
+        unique_together = ('movie', 'person', 'role')
+        ordering = ['movie__title', 'role', 'person__name']
+
+    def __str__(self):
+        return f"{self.person.name} as {self.role} in {self.movie.title}"
 
 class MovieGenre(models.Model):
     """
@@ -143,7 +218,11 @@ class MovieGenre(models.Model):
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE, db_index=True)
 
     class Meta:
-        unique_together = ('movie', 'genre')
+        db_table         = 'movie_genre'
+        verbose_name     = 'Movie Genre'
+        verbose_name_plural = 'Movie Genres'
+        unique_together  = ('movie', 'genre')
+        ordering         = ['movie__title', 'genre__name']
 
     def __str__(self):
         return f"{self.movie.title} → {self.genre.name}"
