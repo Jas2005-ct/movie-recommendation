@@ -4,14 +4,61 @@ All data comes from local PostgreSQL via Django ORM.
 Context variables are serialized to dicts matching the existing template format.
 """
 from django.views.generic import TemplateView
+from django.db import models
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views import View
+from textblob import TextBlob
+import json
 from django.core.paginator import Paginator
 from django.db import models
 
-from .models import Movie, Genre, MovieGenre
+from .models import Movie, Genre, MovieGenre, Review
+
 
 # ---------------------------------------------------------------------------
-# View Helpers
+# aggressive monkeypatch for schema mismatch
+tmdb_id_field = Genre._meta.get_field('tmdb_id')
+tmdb_id_field.primary_key = False
+tmdb_id_field.unique = True
+
+try:
+    id_field = Genre._meta.get_field('id')
+except:
+    id_field = models.AutoField(primary_key=True, name='id', db_column='id')
+    id_field.contribute_to_class(Genre, 'id')
+
+id_field.primary_key = True
+Genre._meta.pk = id_field
+Genre._meta.db_table = 'genre'
+MovieGenre._meta.db_table = 'movie_genre'
+
+# Update Foreign Keys
+for field in MovieGenre._meta.local_fields:
+    if field.name == 'genre':
+        field.remote_field.field_name = 'id'
+
+for field in Movie._meta.local_many_to_many:
+    if field.name == 'genres':
+        field.remote_field.field_name = 'id'
+
+# Ensure Movie is imported for M2M lookup
+from .models import Movie
+Genre._meta._expire_cache()
+Movie._meta._expire_cache()
+MovieGenre._meta._expire_cache()
+
+# Monkeypatch Movie to remove fields that don't exist in DB
+# Fields known to be missing: director, cast, cache_updated_at
+MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
+Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
+for f_name in MISSING_MOVIE_FIELDS:
+    if hasattr(Movie, f_name):
+        delattr(Movie, f_name)
+if hasattr(Movie._meta, '_get_fields_cache'):
+    del Movie._meta._get_fields_cache
+Movie._meta._expire_cache()
+
 # ---------------------------------------------------------------------------
 
 # Helper: convert a Movie queryset to the dict format templates expect
@@ -126,30 +173,56 @@ class MovieDetailHTMLView(TemplateView):
             {'genre': g.name, 'id': g.tmdb_id}
             for g in movie.genres.all()
         ]
-        if movie.poster_url:
-            context['det'] = {
-                'id':            movie.tmdb_id,
-                'name':          movie.title,
-                'release_date':  movie.release_date,
-                'director':      movie.director,
-                'music_director': movie.music_director,
-                'main_actor':    movie.main_actor,
-                'main_actress':  movie.main_actress,
-                'villain':       movie.villain,
-                'comedian':      movie.comedian,
-                'actor':         movie.cast,
-                'rate':          round(movie.vote_average, 1),
-                'tagline':       movie.tagline,
-                'description':   movie.overview,
-                'watch_trailer': movie.trailer_url,
-                'img':           {'url': movie.poster_url},
-                'backdrop':      movie.backdrop_url,
-            }
-            context['genres'] = [
-                {'genre': g.name, 'id': g.id}
-                for g in movie.genres.all()
-            ]
+        
+        # Add reviews to context
+        try:
+            context['reviews'] = movie.reviews.all().order_by('-created_at')
+        except Exception as e:
+            print(f"Error fetching reviews for {movie.tmdb_id}: {e}")
+            context['reviews'] = []
+        
         return context
+
+
+# =============================================================================
+#  REVIEW SUBMISSION API
+# =============================================================================
+
+class ReviewCreateView(View):
+    """
+    Handles AJAX POST requests from details.html to save a new review.
+    Calculates sentiment score on the fly.
+    """
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            tmdb_id     = data.get('tmdb_id')
+            rating      = data.get('rating')
+            review_text = data.get('review_text', '')
+
+            movie = get_object_or_404(Movie, tmdb_id=tmdb_id)
+
+            # Sentiment Analysis
+            sentiment = 0.0
+            if review_text:
+                blob = TextBlob(review_text)
+                sentiment = blob.sentiment.polarity
+
+            review = Review.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                movie=movie,
+                rating=rating,
+                review_text=review_text,
+                sentiment_score=sentiment
+            )
+
+            return JsonResponse({
+                'id': review.id,
+                'status': 'success',
+                'message': 'Review published successfully!'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
 
 # =============================================================================
