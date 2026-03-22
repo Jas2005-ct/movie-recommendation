@@ -1,51 +1,26 @@
-{% extends 'header.html' %}
-{% load static %}
+{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/searchr.css' %}"> {% endblock %}
 
-{% block content %}
-{% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/index.css' %}">
-{% endblock %}
-
-<main class="container">
-    <div class="section-header">
-        <h2 class="section-heading">Search Results for <span>"{{ query }}"</span></h2>
-        <span style="color: var(--clr-text-muted); font-size: 0.9rem;">Found {{ count }} result{{ count|pluralize }}</span>
-    </div>
-
-    {% include 'pagination.html' %}
-
-    <div class="movies-grid">
-        {% for tits in movies %}
-        <div class="movie-card">
-            <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
-                <div class="poster-wrapper">
-                    {% if tits.poster %}
-                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
-                    {% else %}
-                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
-                    {% endif %}
-                    <div class="overlay-glass">
-                        <span class="view-text">View Details</span>
-                    </div>
-                </div>
-            </a>
-            <div class="card-info">
-                <h3>{{tits.name}}</h3>
-                <div class="meta">
-                    <span class="rate">★ {{tits.rate}}</span>
-                    <span class="year">{{tits.year}}</span>
-                </div>
+<head>
+    <title>Search Results</title>
+</head>
+<main>
+    <section class="featured">
+        <h1>Search Results for "{{ query }}"</h1>
+        <div class="movies">
+            {% if movies %} {% for tits in movies %}
+            <div class="movie">
+                <a href="{% url 'mov_detail' id=tits.id %}">
+                    <img src="{{tits.img.url}}">
+                </a>
+                <h2>{{tits.name}} </h2>
+                <p>{{tits.rate}}</p>
+                <p class=" year ">{{tits.year}}</p>
             </div>
+            {% endfor %} {% else %}
+            <p>No results found for "{{ query }}".</p>
+            {% endif %}
         </div>
-        {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; color: var(--clr-text-muted); padding: var(--sp-2xl) 0; animation: fadeIn var(--dur-normal) var(--ease-smooth);">
-            <div style="font-size: 4rem; margin-bottom: var(--sp-md); opacity: 0.2;">🔍</div>
-            <p style="font-size: 1.2rem;">We couldn't find any results for "{{ query }}".</p>
-            <p style="margin-top: var(--sp-sm);">Try searching for actor names or different keywords.</p>
-        </div>
-        {% endfor %}
-    </div>
-
-    {% include 'pagination.html' %}
+    </section>
 </main>
-{% endblock %}
+{%endblock%}
