@@ -6,11 +6,14 @@ Context variables are serialized to dicts matching the existing template format.
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
+from django.db import models
 
-from .models import Movie, Genre
-
+from .models import Movie, Genre, MovieGenre
 
 # ---------------------------------------------------------------------------
+# View Helpers
+# ---------------------------------------------------------------------------
+
 # Helper: convert a Movie queryset to the dict format templates expect
 # ---------------------------------------------------------------------------
 
@@ -105,6 +108,24 @@ class MovieDetailHTMLView(TemplateView):
         context = super().get_context_data(**kwargs)
         tmdb_id = self.kwargs.get('tmdb_id')
         movie   = get_object_or_404(Movie, tmdb_id=tmdb_id)
+
+        context['det'] = {
+            'id':            movie.tmdb_id,
+            'name':          movie.title,
+            'release_date':  movie.release_date,
+            'director':      {'director': getattr(movie, 'director', 'Unknown')},
+            'actor':         {'actor': getattr(movie, 'cast', 'Various')},
+            'rate':          round(movie.vote_average, 1),
+            'tagline':       getattr(movie, 'tagline', ''),
+            'description':   movie.overview,
+            'watch_trailer': getattr(movie, 'trailer_url', ''),
+            'img':           {'url': movie.poster_url},
+            'backdrop':      movie.backdrop_url,
+        }
+        context['genres'] = [
+            {'genre': g.name, 'id': g.tmdb_id}
+            for g in movie.genres.all()
+        ]
         if movie.poster_url:
             context['det'] = {
                 'id':            movie.tmdb_id,
