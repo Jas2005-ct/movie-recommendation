@@ -58,7 +58,7 @@ class MovieGenreInline(admin.TabularInline):
 class MovieAdmin(admin.ModelAdmin):
     list_display    = ('tmdb_id', 'title', 'content_type', 'language', 'vote_average', 'popularity', 'synced_at')
     list_filter     = ('content_type', 'language')
-    search_fields   = ('title', 'tmdb_id', 'director')
+    search_fields   = ('title', 'tmdb_id')
     ordering        = ('-popularity',)
     readonly_fields = ('synced_at',)
     inlines         = [MovieGenreInline]

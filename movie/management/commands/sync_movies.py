@@ -297,26 +297,6 @@ class Command(BaseCommand):
                     trailer_url = f"https://www.youtube.com/watch?v={vid['key']}"
                     break
 
-            # Need to update movie record 
-            Movie.objects.filter(tmdb_id=tmdb_id).update(
-                trailer_url = trailer_url,
-                tagline     = data.get('tagline') or '',
-                overview    = data.get('overview') or movie_obj.overview,
-                vote_average= data.get('vote_average', movie_obj.vote_average),
-                vote_count  = data.get('vote_count', movie_obj.vote_count),
-                backdrop_path = data.get('backdrop_path') or movie_obj.backdrop_path,
-            )
-            
-            # Sync to MovieCrew table
-            from movie.models import Person, MovieCrew
-            for role, name in important_roles.items():
-                if name:
-                    person, _ = Person.objects.get_or_create(name=name)
-                    MovieCrew.objects.get_or_create(
-                        movie=movie_obj,
-                        person=person,
-                        role=role
-                    )
             # Update only available fields
             update_fields = {
                 'tagline':       data.get('tagline') or '',
