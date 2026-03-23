@@ -236,7 +236,8 @@ class GenreHTMLView(TemplateView):
         context = super().get_context_data(**kwargs)
         genres  = (
             Genre.objects
-            .filter(movies__isnull=False)
+            .filter(movies__isnull=False,image__isnull=False)
+            .exclude(image='')
             .distinct()
             .order_by('name')
         )
