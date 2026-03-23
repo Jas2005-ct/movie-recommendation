@@ -51,9 +51,9 @@ MovieGenre._meta._expire_cache()
 # Fields known to be missing: director, cast, cache_updated_at
 MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
 Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
-for f_name in MISSING_MOVIE_FIELDS:
-    if hasattr(Movie, f_name):
-        delattr(Movie, f_name)
+# for f_name in MISSING_MOVIE_FIELDS:
+#     if hasattr(Movie, f_name):
+#         delattr(Movie, f_name)
 if hasattr(Movie._meta, '_get_fields_cache'):
     del Movie._meta._get_fields_cache
 Movie._meta._expire_cache()
@@ -159,8 +159,13 @@ class MovieDetailHTMLView(TemplateView):
             'id':            movie.tmdb_id,
             'name':          movie.title,
             'release_date':  movie.release_date,
-            'director':      {'director': getattr(movie, 'director', 'Unknown')},
-            'actor':         {'actor': getattr(movie, 'cast', 'Various')},
+            'director':      getattr(movie, 'director', 'Unknown'),
+            'music_director': getattr(movie, 'music_director', ''),
+            'main_actor':    getattr(movie, 'main_actor', ''),
+            'main_actress':  getattr(movie, 'main_actress', ''),
+            'villain':       getattr(movie, 'villain', ''),
+            'comedian':      getattr(movie, 'comedian', ''),
+            'actor':         getattr(movie, 'cast', 'Various'),
             'rate':          round(movie.vote_average, 1),
             'tagline':       getattr(movie, 'tagline', ''),
             'description':   movie.overview,
