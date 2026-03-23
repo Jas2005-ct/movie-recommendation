@@ -14,5 +14,6 @@ urlpatterns = [
     path('movies/',                   views.MovieListView.as_view(),        name='movie_list'),
     path('movies/<str:category>/',    views.MovieListView.as_view(),        name='movie_list_category'),
     path('search/',                   views.MovieSearchView.as_view(),      name='search_results'),
+    path('api/search-suggestions/',   views.SearchResultsAjaxView.as_view(), name='search_suggestions'),
     path('api/reviews/',              views.ReviewCreateView.as_view(),     name='add_review'),
 ]

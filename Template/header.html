@@ -27,10 +27,65 @@
             </ul>
         </nav>
         {% block sear %}
-        <form method="GET" action="{% url 'search_results' %}">
-            <input class="tex" type="text" name="query" placeholder="Search movies, shows…" value="{{ query }}">
-            <button class="sea" type="submit">Search</button>
-        </form>
+        <div class="search-container">
+            <form method="GET" action="{% url 'search_results' %}" id="search-form" autocomplete="off">
+                <input class="tex" type="text" name="query" id="search-input" placeholder="Search movies, shows…" value="{{ query }}">
+                <button class="sea" type="submit">Search</button>
+            </form>
+            <div id="search-results"></div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('search-input');
+                const searchResults = document.getElementById('search-results');
+                let debounceTimeout;
+
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimeout);
+                    const query = this.value.trim();
+
+                    if (query.length < 2) {
+                        searchResults.style.display = 'none';
+                        return;
+                    }
+
+                    debounceTimeout = setTimeout(() => {
+                        fetch(`/api/search-suggestions/?query=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                searchResults.innerHTML = '';
+                                if (data.results.length > 0) {
+                                    data.results.forEach(movie => {
+                                        const item = document.createElement('a');
+                                        item.href = movie.url;
+                                        item.className = 'result-item';
+                                        item.innerHTML = `
+                                            <img src="${movie.poster || 'https://via.placeholder.com/45x68/0d1525/ffffff?text=?'}" alt="${movie.title}">
+                                            <div class="result-details">
+                                                <h4>${movie.title}</h4>
+                                                <p>${movie.year || 'N/A'}</p>
+                                            </div>
+                                        `;
+                                        searchResults.appendChild(item);
+                                    });
+                                    searchResults.style.display = 'block';
+                                } else {
+                                    searchResults.innerHTML = '<div class="no-results">No movies found</div>';
+                                    searchResults.style.display = 'block';
+                                }
+                            });
+                    }, 300);
+                });
+
+                // Close results when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                        searchResults.style.display = 'none';
+                    }
+                });
+            });
+        </script>
         {% endblock %}
     </header>
     <main class="page-content">

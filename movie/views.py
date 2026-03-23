@@ -11,8 +11,7 @@ from django.views import View
 from textblob import TextBlob
 import json
 from django.core.paginator import Paginator
-from django.db import models
-
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from .models import Movie, Genre, MovieGenre, Review
 
 
@@ -421,11 +420,17 @@ class MovieSearchView(TemplateView):
         query = self.request.GET.get('query', '').strip()
         
         if query:
-            from django.db.models import Q
-            qs = Movie.objects.filter(
-                Q(title__icontains=query) | 
-                Q(crew__person__name__icontains=query)
-            ).distinct()
+            # Use PostgreSQL Full-Text Search with weighting and ranking
+            # Title (A) is weighted highest, then Overview (B)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('overview', weight='B')
+            
+            search_query = SearchQuery(query)
+            
+            # Filter and rank results
+            qs = Movie.objects.annotate(
+                rank=SearchRank(vector, search_query)
+            ).filter(rank__gte=0.1).order_by('-rank', '-popularity')
         else:
             qs = Movie.objects.none()
 
@@ -436,6 +441,38 @@ class MovieSearchView(TemplateView):
         context['query']     = query
         context['count']     = page_obj.paginator.count
         return context
+
+
+class SearchResultsAjaxView(View):
+    """
+    Search suggestions for AJAX autocomplete.
+    Returns a small JSON list of top matches.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query', '').strip()
+        if not query or len(query) < 2:
+            return JsonResponse({'results': []})
+
+        # Simple but fast search for autocomplete
+        # (FTS might be overkill here, icontains is fine for small top-N suggestion)
+        results = (
+            Movie.objects
+            .filter(title__icontains=query)
+            .order_by('-popularity')[:8]
+        )
+        
+        data = [
+            {
+                'id': m.tmdb_id,
+                'title': m.title,
+                'year': m.release_date.year if m.release_date else '',
+                'poster': m.poster_url,
+                'url': f"/movie/{m.tmdb_id}/"
+            }
+            for m in results
+        ]
+        
+        return JsonResponse({'results': data})
 
 
 # =============================================================================
