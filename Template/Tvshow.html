@@ -9,16 +9,18 @@
 <main class="container">
     <div class="section-header">
         <h2 class="section-heading">Featured <span>TV Shows</span></h2>
-        <form class="srt" method="GET" action="{% url 'show' %}">
-            <select name="sort" onchange="this.form.submit()" class="glass-select">
-                <option value="">Sort By</option>
-                <option value="year">Release Year</option>
-                <option value="az">Highest Rated</option>
-            </select>
-        </form>
+        <div class="header-actions">
+            <form class="srt" method="GET" action="{% url 'show' %}">
+                <select name="sort" onchange="this.form.submit()" class="glass-select">
+                    <option value="">Sort By</option>
+                    <option value="year">Release Year</option>
+                    <option value="az">Highest Rated</option>
+                </select>
+            </form>
+            {% include 'pagination.html' %}
+        </div>
     </div>
 
-    {% include 'pagination.html' %}
 
     <div class="movies-grid">
         {% for tits in sh %}

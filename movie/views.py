@@ -6,7 +6,7 @@ Context variables are serialized to dicts matching the existing template format.
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
-
+from django.views import View
 from .models import Movie, Genre
 
 
@@ -143,9 +143,11 @@ class GenreHTMLView(TemplateView):
         genres  = (
             Genre.objects
             .filter(movies__isnull=False)
+            .exclude(image='')
             .distinct()
             .order_by('name')
         )
+        
         context['cat'] = [
             {
                 'genre_id': g.id, 
@@ -325,13 +327,20 @@ class MovieSearchView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         query = self.request.GET.get('query', '').strip()
-        
+        print(query)
         if query:
-            from django.db.models import Q
-            qs = Movie.objects.filter(
-                Q(title__icontains=query) | 
-                Q(crew__person__name__icontains=query)
-            ).distinct()
+            # Use PostgreSQL Full-Text Search with weighting and ranking
+            # Title (A) is weighted highest, then Overview (B)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('overview', weight='B') + \
+                     SearchVector('genres', weight='C')
+            search_query = SearchQuery(query)
+            
+            # Filter and rank results
+            qs = Movie.objects.annotate(
+                rank=SearchRank(vector, search_query)
+            ).filter(rank__gte=0.1).order_by('-rank', '-popularity').distinct()
+
         else:
             qs = Movie.objects.none()
 
@@ -342,6 +351,38 @@ class MovieSearchView(TemplateView):
         context['query']     = query
         context['count']     = page_obj.paginator.count
         return context
+
+
+class SearchResultsAjaxView(View):
+    """
+    Search suggestions for AJAX autocomplete.
+    Returns a small JSON list of top matches.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query', '').strip()
+        if not query or len(query) < 2:
+            return JsonResponse({'results': []})
+
+        # Simple but fast search for autocomplete
+        # (FTS might be overkill here, icontains is fine for small top-N suggestion)
+        results = (
+            Movie.objects
+            .filter(title__icontains=query)
+            .order_by('-popularity')[:8]
+        )
+       
+        data = [
+            {
+                'id': m.tmdb_id,
+                'title': m.title,
+                'year': m.release_date.year if m.release_date else '',
+                'poster': m.poster_url,
+                'url': f"/movie/{m.tmdb_id}/"
+            }
+            for m in results
+        ]
+        
+        return JsonResponse({'results': data})
 
 
 # =============================================================================

@@ -72,20 +72,35 @@
 .section-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     border-bottom: 1px solid var(--clr-border-dim);
-    padding-bottom: var(--sp-md);
+    padding-bottom: var(--sp-lg);
+    margin-bottom: var(--sp-xl);
+}
+
+.section-heading {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-md);
 }
 
 .glass-select {
     background: var(--clr-bg-glass);
     border: 1px solid var(--clr-border-dim);
     color: var(--clr-text);
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: var(--r-sm);
     outline: none;
     cursor: pointer;
     font-family: inherit;
+    font-size: 0.9rem;
+    height: 42px;
 }
 
 .glass-select option {
@@ -184,3 +199,66 @@
     color: var(--clr-accent-dim);
     font-weight: 600;
 }
+
+/* ── Pagination ─────────────────────────────────────────── */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: var(--sp-2xl) 0;
+    gap: var(--sp-xs);
+    flex-wrap: wrap;
+}
+
+.section-header .pagination-container {
+    margin: 0; /* Remove margin when in header */
+}
+
+.pagination-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    border-radius: var(--r-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--dur-fast) var(--ease-smooth);
+    background: var(--clr-bg-glass);
+    border: 1px solid var(--clr-border-dim);
+    color: var(--clr-text);
+    text-decoration: none;
+    height: 42px;
+    min-width: 42px;
+}
+
+.pagination-item:hover:not(.disabled):not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--clr-accent-dim);
+    transform: translateY(-2px);
+}
+
+.pagination-item.active {
+    background: var(--clr-accent);
+    color: var(--clr-bg-deep);
+    border-color: var(--clr-accent);
+    font-weight: 700;
+}
+
+.pagination-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--clr-bg-glass);
+    color: var(--clr-text-muted);
+}
+
+.pagination-ellipsis {
+    color: var(--clr-text-muted);
+    padding: 0 var(--sp-xs);
+    display: flex;
+    align-items: center;
+}
+
+.page-numbers {
+    display: flex;
+    gap: var(--sp-xs);
+}
