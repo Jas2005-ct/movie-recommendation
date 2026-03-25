@@ -66,6 +66,7 @@ class Movie(models.Model):
     original_title = models.CharField(max_length=512, blank=True, default='')
     content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, default='movie', db_index=True)
     language     = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='other', db_index=True)
+    adult        = models.BooleanField(default=False)
 
     # ------------------------------------------------------------------
     # Media
@@ -171,16 +172,30 @@ class Person(models.Model):
     """
     Normalized person model to represent cast and crew.
     """
-    name = models.CharField(max_length=255, unique=True)
-    
+    tmdb_id        = models.IntegerField(unique=True, null=True, blank=True)
+    name           = models.CharField(max_length=255)
+    gender         = models.IntegerField(null=True, blank=True)   # 1=Female, 2=Male, 3=Non-binary
+    profile_path   = models.CharField(max_length=255, blank=True, default='')
+    biography      = models.TextField(blank=True, default='')
+    birthday       = models.DateField(null=True, blank=True)
+    deathday       = models.DateField(null=True, blank=True)
+    place_of_birth = models.CharField(max_length=255, blank=True, default='')
+    popularity     = models.FloatField(default=0.0)
+
     class Meta:
         db_table = 'person'
         verbose_name = 'Person'
         verbose_name_plural = 'People'
-        ordering = ['name']
-        
+        ordering = ['-popularity', 'name']
+
     def __str__(self):
         return self.name
+
+    @property
+    def profile_url(self):
+        if self.profile_path:
+            return f"https://image.tmdb.org/t/p/w185{self.profile_path}"
+        return ''
 
 class MovieCrew(models.Model):
     """
