@@ -17,12 +17,19 @@ class Command(BaseCommand):
         self.stdout.write(self.style.MIGRATE_HEADING('\n===  Person Details Sync  ==='))
         
         limit = options['limit']
-        persons = Person.objects.filter(tmdb_id__isnull=False)
+        # Prioritize people who are actually in the MovieCrew table
+        persons = (
+            Person.objects
+            .filter(tmdb_id__isnull=False, movie_roles__isnull=False)
+            .distinct()
+            .order_by('-popularity', 'name')
+        )
+        
         if limit > 0:
             persons = persons[:limit]
             
         total = persons.count()
-        self.stdout.write(f"Syncing details for {total} persons...\n")
+        self.stdout.write(f"Syncing details for {total} prioritized persons...\n")
 
         success = 0
         failed = 0

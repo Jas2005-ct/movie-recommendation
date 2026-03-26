@@ -17,7 +17,7 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction, models, connection
-from movie.models import Movie, Genre, MovieGenre
+from movie.models import Movie, Genre, MovieGenre, Person, MovieCrew
 
 
 TMDB_BASE = "https://api.themoviedb.org/3"
@@ -257,39 +257,60 @@ class Command(BaseCommand):
                 time.sleep(SLEEP_BETWEEN_REQUESTS)
                 continue
 
-            # Extract all important roles
-            important_roles = {
-                'Director': None,
-                'Music Director': None, # TMDB uses Original Music Composer usually
-                'Main Actor': None,
-                'Main Actress': None,
-                'Villain': None,
-                'Comedian': None,
-            }
-
+            # --- Sync Crew & Cast ---
             credits = data.get('credits', {})
-            crew = credits.get('crew', [])
             
-            # Find Director and Music Director
-            for c in crew:
+            # 1. Crew (Directors, Music Directors)
+            crew_list = credits.get('crew', [])
+            
+            # For TV shows, 'created_by' is often used instead of 'crew' for directors
+            if not any(c.get('job') == 'Director' for c in crew_list) and data.get('created_by'):
+                for creator in data['created_by']:
+                    p_obj, _ = Person.objects.update_or_create(
+                        tmdb_id=creator['id'],
+                        defaults={'name': creator.get('name', 'Unknown')}
+                    )
+                    MovieCrew.objects.get_or_create(
+                        movie=movie_obj,
+                        person=p_obj,
+                        role='Director'
+                    )
+
+            for c in crew_list:
                 job = c.get('job')
-                if job == 'Director' and not important_roles['Director']:
-                    important_roles['Director'] = c.get('name')
-                elif job in ['Original Music Composer', 'Music'] and not important_roles['Music Director']:
-                    important_roles['Music Director'] = c.get('name')
-                    
-            # TV shows use 'created_by' for the director equivalent
-            if not important_roles['Director'] and data.get('created_by'):
-                important_roles['Director'] = data['created_by'][0].get('name') if data['created_by'] else None
+                role = None
+                if job == 'Director':
+                    role = 'Director'
+                elif job in ['Original Music Composer', 'Music']:
+                    role = 'Music Director'
+                
+                if role:
+                    p_obj, _ = Person.objects.update_or_create(
+                        tmdb_id=c['id'],
+                        defaults={'name': c.get('name', 'Unknown')}
+                    )
+                    MovieCrew.objects.get_or_create(
+                        movie=movie_obj,
+                        person=p_obj,
+                        role=role
+                    )
 
-            # Logic for actors (simplified to top 4 max)
-            cast = credits.get('cast', [])
-            if cast:
-                important_roles['Main Actor'] = cast[0].get('name') if len(cast) > 0 else None
-                important_roles['Main Actress'] = cast[1].get('name') if len(cast) > 1 else None
-                important_roles['Villain'] = cast[2].get('name') if len(cast) > 2 else None
-                important_roles['Comedian'] = cast[3].get('name') if len(cast) > 3 else None
+            # 2. Cast (Top 4 actors mapped to specific roles for simplicity)
+            cast_list = credits.get('cast', [])
+            role_map = ['Main Actor', 'Main Actress', 'Villain', 'Comedian']
+            for i, c in enumerate(cast_list[:4]):
+                role = role_map[i]
+                p_obj, _ = Person.objects.update_or_create(
+                    tmdb_id=c['id'],
+                    defaults={'name': c.get('name', 'Unknown')}
+                )
+                MovieCrew.objects.get_or_create(
+                    movie=movie_obj,
+                    person=p_obj,
+                    role=role
+                )
 
+            # --- Meta Data ---
             # Trailer (YouTube only)
             trailer_url = ''
             for vid in data.get('videos', {}).get('results', []):
@@ -297,20 +318,15 @@ class Command(BaseCommand):
                     trailer_url = f"https://www.youtube.com/watch?v={vid['key']}"
                     break
 
-            # Update only available fields
+            # Update movie fields
             update_fields = {
                 'tagline':       data.get('tagline') or '',
                 'overview':      data.get('overview') or movie_obj.overview,
                 'vote_average':  data.get('vote_average', movie_obj.vote_average),
                 'vote_count':    data.get('vote_count', movie_obj.vote_count),
                 'backdrop_path': data.get('backdrop_path') or movie_obj.backdrop_path,
+                'trailer_url':   trailer_url,
             }
-            
-            # Conditionally add fields that might be missing in DB, but we'll try to update them
-            # if they exist. Since we can't check columns easily per row, we'll use filter().update()
-            # which is safer than .save() as it won't fail the whole transaction if one field is missing
-            # BUT wait, filter().update() with a missing column WILL fail.
-            # So we use a helper to only update what's likely there.
             
             Movie.objects.filter(tmdb_id=tmdb_id).update(**update_fields)
 
