@@ -31,13 +31,13 @@
                     {% endfor %}
                 </p>
                 {% if det.director %}
-                <p><strong>Director:</strong> {{ det.director }}</p>
+                <p><strong>Director:</strong> {{ det.director.name }}</p>
                 {% endif %}
                 {% if det.music_director %}
                 <p><strong>Music Director:</strong> {{ det.music_director }}</p>
                 {% endif %}
                 {% if det.main_actor %}
-                <p><strong>Main Actor:</strong> {{ det.main_actor }}</p>
+                <p><strong>Main Actor:</strong> {{ det.main_actor.name }}</p>
                 {% endif %}
                 {% if det.main_actress %}
                 <p><strong>Main Actress:</strong> {{ det.main_actress }}</p>
