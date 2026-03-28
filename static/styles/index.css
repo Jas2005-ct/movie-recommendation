@@ -183,4 +183,6 @@
 .card-info .rate {
     color: var(--clr-accent-dim);
     font-weight: 600;
-}
+}  
+/* Pagination */  
+.pagination-container { display: flex; justify-content: center; align-items: center; margin: var(--sp-lg) 0; gap: var(--sp-xs); flex-wrap: wrap; } 

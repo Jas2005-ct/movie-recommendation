@@ -7,12 +7,14 @@
 {% endblock %}
 
 <main class="container">
-    <div class="section-header">
-        <h2 class="section-heading">Search Results for <span>"{{ query }}"</span></h2>
-        <span style="color: var(--clr-text-muted); font-size: 0.9rem;">Found {{ count }} result{{ count|pluralize }}</span>
+    <div class="section-header" style="flex-direction: row; align-items: center; border-bottom: 1px solid var(--clr-border-dim); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-md);">
+        <div class="header-left" style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 class="section-heading" style="margin: 0;">Search Results for <span>"{{ query }}"</span></h2>
+            <p class="result-count" style="font-size: 0.85rem; color: var(--clr-text-muted); font-weight: 500;">
+                Found <span style="color: var(--clr-accent);">{{ count }}</span> result{{ count|pluralize }} in the database
+            </p>
+        </div>
     </div>
-
-    {% include 'pagination.html' %}
 
     <div class="movies-grid">
         {% for tits in movies %}

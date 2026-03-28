@@ -113,7 +113,7 @@ def _get_paginated_movies(request, qs, per_page: int = 24):
 # =============================================================================
 
 class HomeView(TemplateView):
-    template_name = 'first.html'
+    template_name = 'home_page.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

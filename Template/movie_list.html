@@ -7,19 +7,25 @@
 {% endblock %}
 
 <main class="container">
-    <div class="section-header">
-        <h2 class="section-heading">{{ title }}</h2>
-        <form class="srt" method="GET" action="">
-            <select name="sort" onchange="this.form.submit()" class="glass-select">
-                <option value="">Sort By</option>
-                <option value="year" {% if request.GET.sort == 'year' %}selected{% endif %}>Release Year</option>
-                <option value="az" {% if request.GET.sort == 'az' %}selected{% endif %}>Highest Rated</option>
-                <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Most Popular</option>
-            </select>
-        </form>
+    <div class="section-header" style="flex-direction: row; align-items: center; border-bottom: 1px solid var(--clr-border-dim); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-md);">
+        <div class="header-left" style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 class="section-heading" style="margin: 0;">{{ title }}</h2>
+            <p class="result-count" style="font-size: 0.85rem; color: var(--clr-text-muted); font-weight: 500;">
+                Showing <span style="color: var(--clr-accent);">{{ movies|length }}</span> of {{ page_obj.paginator.count }} movies
+            </p>
+        </div>
+        
+        <div class="header-right" style="display: flex; align-items: center; gap: var(--sp-md);">
+            <form class="srt" method="GET" action="" style="margin: 0;">
+                <select name="sort" onchange="this.form.submit()" class="glass-select" style="padding: 6px 12px; font-size: 0.9rem; border-color: rgba(232, 184, 75, 0.3);">
+                    <option value="">Sort By</option>
+                    <option value="year" {% if request.GET.sort == 'year' %}selected{% endif %}>Release Year</option>
+                    <option value="az" {% if request.GET.sort == 'az' %}selected{% endif %}>Highest Rated</option>
+                    <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Most Popular</option>
+                </select>
+            </form>
+        </div>
     </div>
-
-    {% include 'pagination.html' %}
 
     <div class="movies-grid">
         {% for tits in movies %}
