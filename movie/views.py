@@ -11,8 +11,7 @@ from django.views import View
 from textblob import TextBlob
 import json
 from django.core.paginator import Paginator
-from django.db import models
-
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from .models import Movie, Genre, MovieGenre, Review
 
 
@@ -52,9 +51,9 @@ MovieGenre._meta._expire_cache()
 # Fields known to be missing: director, cast, cache_updated_at
 MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
 Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
-for f_name in MISSING_MOVIE_FIELDS:
-    if hasattr(Movie, f_name):
-        delattr(Movie, f_name)
+# for f_name in MISSING_MOVIE_FIELDS:
+#     if hasattr(Movie, f_name):
+#         delattr(Movie, f_name)
 if hasattr(Movie._meta, '_get_fields_cache'):
     del Movie._meta._get_fields_cache
 Movie._meta._expire_cache()
@@ -160,8 +159,13 @@ class MovieDetailHTMLView(TemplateView):
             'id':            movie.tmdb_id,
             'name':          movie.title,
             'release_date':  movie.release_date,
-            'director':      {'director': getattr(movie, 'director', 'Unknown')},
-            'actor':         {'actor': getattr(movie, 'cast', 'Various')},
+            'director':      getattr(movie, 'director', 'Unknown'),
+            'music_director': getattr(movie, 'music_director', ''),
+            'main_actor':    getattr(movie, 'main_actor', ''),
+            'main_actress':  getattr(movie, 'main_actress', ''),
+            'villain':       getattr(movie, 'villain', ''),
+            'comedian':      getattr(movie, 'comedian', ''),
+            'actor':         getattr(movie, 'cast', 'Various'),
             'rate':          round(movie.vote_average, 1),
             'tagline':       getattr(movie, 'tagline', ''),
             'description':   movie.overview,
@@ -422,11 +426,17 @@ class MovieSearchView(TemplateView):
         query = self.request.GET.get('query', '').strip()
         
         if query:
-            from django.db.models import Q
-            qs = Movie.objects.filter(
-                Q(title__icontains=query) | 
-                Q(crew__person__name__icontains=query)
-            ).distinct()
+            # Use PostgreSQL Full-Text Search with weighting and ranking
+            # Title (A) is weighted highest, then Overview (B)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('overview', weight='B')
+            
+            search_query = SearchQuery(query)
+            
+            # Filter and rank results
+            qs = Movie.objects.annotate(
+                rank=SearchRank(vector, search_query)
+            ).filter(rank__gte=0.1).order_by('-rank', '-popularity')
         else:
             qs = Movie.objects.none()
 
@@ -437,6 +447,38 @@ class MovieSearchView(TemplateView):
         context['query']     = query
         context['count']     = page_obj.paginator.count
         return context
+
+
+class SearchResultsAjaxView(View):
+    """
+    Search suggestions for AJAX autocomplete.
+    Returns a small JSON list of top matches.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query', '').strip()
+        if not query or len(query) < 2:
+            return JsonResponse({'results': []})
+
+        # Simple but fast search for autocomplete
+        # (FTS might be overkill here, icontains is fine for small top-N suggestion)
+        results = (
+            Movie.objects
+            .filter(title__icontains=query)
+            .order_by('-popularity')[:8]
+        )
+        
+        data = [
+            {
+                'id': m.tmdb_id,
+                'title': m.title,
+                'year': m.release_date.year if m.release_date else '',
+                'poster': m.poster_url,
+                'url': f"/movie/{m.tmdb_id}/"
+            }
+            for m in results
+        ]
+        
+        return JsonResponse({'results': data})
 
 
 # =============================================================================
