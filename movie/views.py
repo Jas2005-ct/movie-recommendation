@@ -120,12 +120,12 @@ class HomeView(TemplateView):
 
         bollywood_qs = (
             Movie.objects
-            .filter(content_type='movie', language='hi')
+            .filter(content_type='movie', language='hi',adult=False)
             .order_by('-popularity', '-vote_average')[:20]
         )
         south_qs = (
             Movie.objects
-            .filter(content_type='movie', language__in=['ta', 'te', 'ml', 'kn'])
+            .filter(content_type='movie', language__in=['ta', 'te', 'ml', 'kn'],adult=False)
             .order_by('-popularity', '-vote_average')[:20]
         )
 
@@ -311,7 +311,7 @@ class TVShowHTMLView(TemplateView):
         
         shows_qs = (
             Movie.objects
-            .filter(content_type='tv', tmdb_id__isnull=False)
+            .filter(content_type='tv', tmdb_id__isnull=False,adult=False)
         )
         
         if sort_by == 'year':
