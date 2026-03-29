@@ -113,7 +113,7 @@ def _get_paginated_movies(request, qs, per_page: int = 24):
 # =============================================================================
 
 class HomeView(TemplateView):
-    template_name = 'first.html'
+    template_name = 'home_page.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -369,10 +369,10 @@ class CategoryHTMLView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['ca'] = [
-            {'category_id': 'bollywood',    'title': 'Bollywood',     'desc': 'Popular Hindi movies'},
-            {'category_id': 'south_indian', 'title': 'South Indian',  'desc': 'Tamil, Telugu, Malayalam & Kannada'},
-            {'category_id': 'top_rated',    'title': 'Top Rated',     'desc': 'Highest rated movies in DB'},
-            {'category_id': 'tv_shows',     'title': 'TV Shows',      'desc': 'Popular Indian web series & shows'},
+            {'category_id': 'bollywood',    'title': 'Bollywood',     'desc': 'Popular Hindi movies', 'poster':'images/category/bollywood.webp'},
+            {'category_id': 'south_indian', 'title': 'South Indian',  'desc': 'Tamil, Telugu, Malayalam & Kannada', 'poster':'images/category/south_indian.webp'},
+            {'category_id': 'top_rated',    'title': 'Top Rated',     'desc': 'Highest rated movies in DB', 'poster':'images/category/top_rated.webp'},
+            {'category_id': 'tv_shows',     'title': 'TV Shows',      'desc': 'Popular Indian web series & shows', 'poster':'images/category/tv_shows.webp'},
         ]
         return context
 
@@ -389,14 +389,14 @@ class MovieListView(TemplateView):
         category = self.kwargs.get('category', 'all')
         sort_by  = self.request.GET.get('sort', 'popularity')
         
-        qs = Movie.objects.filter(content_type='movie', tmdb_id__isnull=False)
+        qs = Movie.objects.filter(content_type='movie', tmdb_id__isnull=False,adult=False)
         
         title = "All Movies"
         if category == 'bollywood':
             qs = qs.filter(language='hi')
             title = "Bollywood Hits"
         elif category == 'south_indian':
-            qs = qs.filter(language__in=['ta', 'te', 'ml', 'kn'])
+            qs = qs.filter(language__in=['ta','ml', 'kn'])
             title = "South Indian Blockbusters"
         elif category == 'top_rated':
             # Skip popularity default if specifically asking for top rated
