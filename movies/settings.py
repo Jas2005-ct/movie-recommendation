@@ -18,7 +18,7 @@ DEBUG      = os.environ.get('DEBUG', 'True') == 'True'
 # TMDB key — only used by management command, never during a user request
 TMDB_API_KEY = os.environ.get('TMDB_API_KEY', '')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # =============================================================================
 # Application definition
