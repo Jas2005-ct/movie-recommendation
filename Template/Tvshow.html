@@ -1,30 +1,58 @@
- {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/show.css' %}"> {% endblock %}
-<main>
-    <section class="featured">
-        <h1>Featured Movies</h1>
-        </h1>
-        <form class="srt" method="GET" action="{% url 'show' %}">
-            <select name="sort" onchange="this.form.submit()">
-            <option value="">Select Option</option>
-            <option value="year">Year</option>
-            <option value="az">A to Z</option>
-        </select>
-        </form>
-    </section>
-    <div class="movies">
+{% extends 'header.html' %}
+{% load static %}
+
+{% block content %}
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}">
+{% endblock %}
+
+<main class="container">
+    <div class="section-header" style="flex-direction: row; align-items: center; border-bottom: 1px solid var(--clr-border-dim); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-md);">
+        <div class="header-left" style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 class="section-heading" style="margin: 0;">Featured <span>TV Shows</span></h2>
+            <p class="result-count" style="font-size: 0.85rem; color: var(--clr-text-muted); font-weight: 500;">
+                Showing <span style="color: var(--clr-accent);">{{ sh|length }}</span> of {{ page_obj.paginator.count }} shows
+            </p>
+        </div>
+        
+        <div class="header-right" style="display: flex; align-items: center; gap: var(--sp-md);">
+            <form class="srt" method="GET" action="{% url 'show' %}" style="margin: 0;">
+                <select name="sort" onchange="this.form.submit()" class="glass-select" style="padding: 6px 12px; font-size: 0.9rem; border-color: rgba(232, 184, 75, 0.3);">
+                    <option value="">Sort By</option>
+                    <option value="year">Release Year</option>
+                    <option value="az">Highest Rated</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="movies-grid">
         {% for tits in sh %}
-        <div class="movie">
-            <a href="{% url 'show_det' id=tits.id %}">
-                <img src="{{tits.img.url}}">
+        <div class="movie-card">
+            <!-- No distinct tv detail page yet so linking to missing details url but mapped to a hash to avoid 500 error -->
+            {% if tits.id %}
+            <a href="{% url 'show_details' tits.id %}" class="poster-link">
+                {% endif %}
+                <div class="poster-wrapper">
+                    {% if tits.poster %}
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% endif %}
+                    <div class="overlay-glass">
+                        <span class="view-text">Featured</span>
+                    </div>
+                </div>
             </a>
-            <h2>{{tits.name}} </h2>
-            <p>{{tits.rate}}</p>
-            <p class=" year ">{{tits.year_f}}</p>
-            <p>{{tits.ep}}</p>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year_f}}</span>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
 
+    {% include 'pagination.html' %}
 </main>
-{%endblock%}
+{% endblock %}

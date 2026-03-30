@@ -1,0 +1,62 @@
+{% extends 'header.html' %}
+{% load static %}
+
+{% block content %}
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}">
+{% endblock %}
+
+<main class="container" style="padding-top: var(--sp-2xl);">
+    <div class="section-header" style="flex-direction: row; align-items: center; border-bottom: 1px solid var(--clr-border-dim); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-md);">
+        <div class="header-left" style="display: flex; flex-direction: column; gap: 4px;">
+            <h2 class="section-heading" style="margin: 0;">Movies for <span>{{ genre_name }}</span></h2>
+            <p class="result-count" style="font-size: 0.85rem; color: var(--clr-text-muted); font-weight: 500;">
+                Showing <span style="color: var(--clr-accent);">{{ movies|length }}</span> of {{ page_obj.paginator.count }} movies
+            </p>
+        </div>
+        
+        <div class="header-right" style="display: flex; align-items: center; gap: var(--sp-md);">
+            <form class="srt" method="GET" action="" style="margin: 0;">
+                <select name="sort" onchange="this.form.submit()" class="glass-select" style="padding: 6px 12px; font-size: 0.9rem; border-color: rgba(232, 184, 75, 0.3);">
+                    <option value="">Sort By</option>
+                    <option value="year" {% if request.GET.sort == 'year' %}selected{% endif %}>Release Year</option>
+                    <option value="az" {% if request.GET.sort == 'az' %}selected{% endif %}>Highest Rated</option>
+                    <option value="popularity" {% if request.GET.sort == 'popularity' %}selected{% endif %}>Most Popular</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="movies-grid">
+        {% for tits in movies %}
+        <div class="movie-card">
+            <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
+                <div class="poster-wrapper">
+                    {% if tits.poster %}
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                    {% endif %}
+                    <div class="overlay-glass">
+                        <span class="view-text">View Details</span>
+                    </div>
+                </div>
+            </a>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year}}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--clr-text-muted); padding: var(--sp-2xl) 0;">
+            <p style="font-size: 1.2rem;">No movies found for this genre right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% include 'pagination.html' %}
+</main>
+{% endblock %}

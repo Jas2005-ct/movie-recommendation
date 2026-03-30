@@ -1,30 +1,19 @@
 from django.urls import path
-from .import views
+from . import views
 
 urlpatterns = [
-    path('',views.first, name='index'),
-    path('old/', views.old, name='old_mov'),
-    path('search/', views.search_result, name='search_results'),
-    path('category/',views.category, name='sort'),
-    path('Tvshow/',views.Tvshows,name='show'),
-    path('year/int:year/',views.year,name='ye'),
-    path('movies/<int:year>/', views.year_based, name='year_b'),
-    path('actor/',views.actor,name='act'),
-    path('actress/',views.actress,name='heroine'),
-    path('director/',views.director,name='direct'),
-    path('comedian/',views.comedians,name='comedy'),
-    path('musics/',views.musics,name='music_d'),
-    path('act_det/<int:actor_id>/', views.act_det, name='acts_detail'),
-    path('actress_det/<int:actress_id>',views.actress_det,name='actres_detail'),
-    path('direct_det/<int:director_id>',views.direct_det,name='director_detail'),
-    path('music_det/<int:music_id>',views.musi_det,name='music_detail'),
-    path('come_det/<int:comedian_id>',views.come_det,name='come_detail'),
-    path('det/<int:id>/', views.movie_det, name='mov_detail'),
-    path('gen', views.gen, name='genre'),
-    path('genre/<int:genre_id>/', views.gen_bas, name='genre_movies'),
-    path('emotion-search/', views.emotion_based_search, name='emotion_based_search'),
-    path('review/<int:id>/', views.review, name='show_review'),
-    path('show/<int:id>/', views.sho_det, name='show_det'),
-    path('camera/', views.camera_pag, name='camera_page'),
-    path('capture-emotion/', views.capture_emotion, name='capture_emotion')
+    # --- HTML Frontend Routes (DB-backed, no live API calls) ---
+    path('',                          views.HomeView.as_view(),             name='index'),
+    path('movie/<int:tmdb_id>/',      views.MovieDetailHTMLView.as_view(),  name='movie_detail'),
+    path('camera/',                   views.EmotionCaptureHTMLView.as_view(), name='camera_page'),
+    path('category/',                 views.CategoryHTMLView.as_view(),     name='sort'),
+    path('genre/',                    views.GenreHTMLView.as_view(),        name='genre'),
+    path('genre/<int:genre_id>/',     views.GenreDetailView.as_view(),      name='genre_detail'),
+    path('tv-shows/',                 views.TVShowHTMLView.as_view(),       name='show'),
+    path('tv-shows/<int:tmdb_id>/',   views.TVShowDetailView.as_view(),     name='show_details'),
+    path('movies/',                   views.MovieListView.as_view(),        name='movie_list'),
+    path('movies/<str:category>/',    views.MovieListView.as_view(),        name='movie_list_category'),
+    path('search/',                   views.MovieSearchView.as_view(),      name='search_results'),
+    path('api/search-suggestions/',   views.SearchResultsAjaxView.as_view(), name='search_suggestions'),
+    path('api/reviews/',              views.ReviewCreateView.as_view(),     name='add_review'),
 ]

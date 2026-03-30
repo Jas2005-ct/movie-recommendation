@@ -1,126 +1,307 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.postgres.fields import ArrayField
-from PIL import Image
-# Create your models here.
+from django.contrib.auth.models import User
 
-class casts(models.Model):
-    actor_id = models.AutoField(primary_key=True)
-    actor = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    debut_movie = models.TextField()
-    debut_year = models.IntegerField()
-    img = models.ImageField(upload_to='pics')
+
+# =============================================================================
+# REFERENCE / LOOKUP TABLES
+# =============================================================================
+
+class Genre(models.Model):
+    """
+    TMDB genre reference table. Populated once by sync_movies command.
+    e.g. id=28 → 'Action', id=18 → 'Drama'
+    """
+    # We use our own auto-increment ID as PK, but keep tmdb_id
+    id = models.AutoField(primary_key=True)
+    tmdb_id = models.IntegerField(unique=True, null=True, blank=True)
+    name     = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(upload_to='genre_images', blank=True, null=True)
 
     class Meta:
-        managed = False
-        db_table = 'casts'
-    
-class genre(models.Model):
-    genre_id = models.AutoField(primary_key=True)
-    genre = models.CharField(max_length=255)
-    img = models.ImageField(upload_to='pics')
+        db_table         = 'genre'
+        verbose_name     = 'Genre'
+        verbose_name_plural = 'Genres'
+        ordering         = ['name']
 
-class direct(models.Model):
-    director_id = models.AutoField(primary_key=True)
-    director = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    debut_movie = models.TextField()
-    debut_year = models.IntegerField()
-    img = models.ImageField(upload_to='pics')
-    
-class title(models.Model):
-    name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to='pics')
-    rate = models.FloatField(default=0.0)
-    year = models.IntegerField()
-    director = models.ForeignKey(direct, null=True, blank=True,on_delete=models.CASCADE,db_column='director_id')
-    actor = models.ForeignKey(casts, null=True, blank=True,on_delete=models.CASCADE,db_column='actor_id')
-    release_date = models.DateField(null=True, blank=True)
-    tagline = models.CharField(max_length=255, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    watch_trailer = models.URLField(max_length=500, null=True, blank=True)
-    genres = models.ManyToManyField('genre', blank=True, related_name='movies')
     def __str__(self):
         return self.name
 
 
-class cate():
-    img: str
-    a: str
-    name: str
+# =============================================================================
+# CORE CONTENT TABLES
+# =============================================================================
 
-class sho(models.Model):
-    name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to='pics')
-    rate = models.FloatField(default=0.0)
-    year_f = models.IntegerField()
-    ep = models.IntegerField()
-    genre = models.CharField(max_length=100, null=True, blank=True) 
-    description = models.TextField(null=True, blank=True) 
-    streaming_platform = models.CharField(max_length=100, null=True, blank=True) 
-    language = models.CharField(max_length=50, null=True, blank=True)  
-    trailer_link = models.URLField(null=True, blank=True)
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        img = Image.open(self.img.path)
-        desired_size = (200, 300)  
-        img.thumbnail(desired_size, Image.ANTIALIAS)
-        canvas = Image.new("RGB", desired_size, (255, 255, 255))  
-        offset = (
-            (desired_size[0] - img.size[0]) // 2,
-            (desired_size[1] - img.size[1]) // 2,
-        )
-        canvas.paste(img, offset)
-        canvas.save(self.img.path)
+class Movie(models.Model):
+    """
+    Full local mirror of TMDB movie/TV-show data.
+    Populated and refreshed exclusively by the `sync_movies` management command.
+    Views NEVER call the TMDB API — they only query this table.
+    """
 
+    LANGUAGE_CHOICES = [
+        ('hi', 'Hindi'),
+        ('ta', 'Tamil'),
+        ('te', 'Telugu'),
+        ('ml', 'Malayalam'),
+        ('kn', 'Kannada'),
+        ('en', 'English'),
+        ('other', 'Other'),
+    ]
 
-class year():
-    year: int
+    CONTENT_TYPE_CHOICES = [
+        ('movie', 'Movie'),
+        ('tv',    'TV Show'),
+    ]
 
-class actees(models.Model):
-    actress_id = models.AutoField(primary_key=True)
-    actress = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    debut_movie = models.TextField()
-    debut_year = models.IntegerField()
-    img = models.ImageField(upload_to='pics')
+    # ------------------------------------------------------------------
+    # Primary key — TMDB ID is our canonical identifier
+    # ------------------------------------------------------------------
+    tmdb_id      = models.IntegerField(primary_key=True)
 
+    # ------------------------------------------------------------------
+    # Core fields (always populated)
+    # ------------------------------------------------------------------
+    title        = models.CharField(max_length=512)
+    original_title = models.CharField(max_length=512, blank=True, default='')
+    content_type = models.CharField(max_length=10, choices=CONTENT_TYPE_CHOICES, default='movie', db_index=True)
+    language     = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='other', db_index=True)
+    adult        = models.BooleanField(default=False)
 
+    # ------------------------------------------------------------------
+    # Media
+    # ------------------------------------------------------------------
+    poster_path   = models.CharField(max_length=255, blank=True, default='')
+    backdrop_path = models.CharField(max_length=255, blank=True, default='')
 
-class comedian(models.Model):
-    comedian_id = models.AutoField(primary_key=True)
-    comedian = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    debut_movie = models.TextField()
-    debut_year = models.IntegerField()
-    img = models.ImageField(upload_to='pics')
+    # ------------------------------------------------------------------
+    # Metadata
+    # ------------------------------------------------------------------
+    overview      = models.TextField(blank=True, default='')
+    tagline       = models.CharField(max_length=512, blank=True, default='')
+    release_date  = models.DateField(null=True, blank=True)
+    vote_average  = models.FloatField(default=0.0, db_index=True)
+    vote_count    = models.IntegerField(default=0)
+    popularity    = models.FloatField(default=0.0, db_index=True)
 
-class music(models.Model):
-    music_id = models.AutoField(primary_key=True)
-    music = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    debut_movie = models.TextField()
-    debut_year = models.IntegerField()
-    img = models.ImageField(upload_to='pics')
+    # ------------------------------------------------------------------
+    # Credits (Normalized through MovieCrew)
+    # ------------------------------------------------------------------
+    trailer_url = models.URLField(max_length=512, blank=True, default='')
 
-class Review(models.Model):
-    movie = models.ForeignKey(title, on_delete=models.CASCADE, related_name='reviews')
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)]  # Ensures rating is between 1 and 5
+    # ------------------------------------------------------------------
+    # Relationships
+    # ------------------------------------------------------------------
+    genres = models.ManyToManyField(
+        Genre,
+        through='MovieGenre',
+        related_name='movies',
+        blank=True,
     )
-    review_text = models.TextField(blank=True, null=True)  # Optional review text
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Review for {self.movie.name} - {self.rating} Stars"
-    
-class MovieTitleGenres(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    title = models.ForeignKey(title, models.DO_NOTHING)
-    genre = models.ForeignKey(genre, models.DO_NOTHING)
+    # ------------------------------------------------------------------
+    # Housekeeping
+    # ------------------------------------------------------------------
+    synced_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False
-        db_table = 'movie_title_genres'
-        unique_together = (('title', 'genre'),)
+        ordering  = ['-popularity']
+        indexes   = [
+            models.Index(fields=['content_type', 'language']),
+            models.Index(fields=['content_type', 'popularity']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.content_type.upper()}, TMDB:{self.tmdb_id})"
+
+    # ------------------------------------------------------------------
+    # Helpers used by templates
+    # ------------------------------------------------------------------
+    @property
+    def poster_url(self):
+        if self.poster_path:
+            return f"https://image.tmdb.org/t/p/w500{self.poster_path}"
+        return ''
+
+    @property
+    def backdrop_url(self):
+        if self.backdrop_path:
+            return f"https://image.tmdb.org/t/p/original{self.backdrop_path}"
+        return ''
+
+    @property
+    def year(self):
+        return self.release_date.year if self.release_date else ''
+
+    def _get_crew_names(self, role):
+        return ", ".join(self.crew.filter(role=role).values_list('person__name', flat=True))
+
+    @property
+    def director(self):
+        return self._get_crew_names('Director')
+
+    @property
+    def music_director(self):
+        return self._get_crew_names('Music Director')
+
+    @property
+    def main_actor(self):
+        return self._get_crew_names('Main Actor')
+
+    @property
+    def main_actress(self):
+        return self._get_crew_names('Main Actress')
+
+    @property
+    def villain(self):
+        return self._get_crew_names('Villain')
+
+    @property
+    def comedian(self):
+        return self._get_crew_names('Comedian')
+
+    @property
+    def cast(self):
+        # Concatenate main actor, actress, villain, comedian for a simple cast string
+        from itertools import filterfalse
+        roles = filter(None, [self.main_actor, self.main_actress, self.villain, self.comedian])
+        return ", ".join(roles)
+
+
+class Person(models.Model):
+    """
+    Normalized person model to represent cast and crew.
+    """
+    tmdb_id        = models.IntegerField(unique=True, null=True, blank=True)
+    name           = models.CharField(max_length=255)
+    gender         = models.IntegerField(null=True, blank=True)   # 1=Female, 2=Male, 3=Non-binary
+    profile_path   = models.CharField(max_length=255, blank=True, default='')
+    biography      = models.TextField(blank=True, default='')
+    birthday       = models.DateField(null=True, blank=True)
+    deathday       = models.DateField(null=True, blank=True)
+    place_of_birth = models.CharField(max_length=255, blank=True, default='')
+    popularity     = models.FloatField(default=0.0)
+
+    class Meta:
+        db_table = 'person'
+        verbose_name = 'Person'
+        verbose_name_plural = 'People'
+        ordering = ['-popularity', 'name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def profile_url(self):
+        if self.profile_path:
+            return f"https://image.tmdb.org/t/p/w185{self.profile_path}"
+        return ''
+
+class MovieCrew(models.Model):
+    """
+    Through-table for normalized crew relationships.
+    """
+    ROLE_CHOICES = [
+        ('Director', 'Director'),
+        ('Music Director', 'Music Director'),
+        ('Main Actor', 'Main Actor'),
+        ('Main Actress', 'Main Actress'),
+        ('Villain', 'Villain'),
+        ('Comedian', 'Comedian'),
+    ]
+
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='crew')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name='movie_roles')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+
+    class Meta:
+        db_table = 'movie_crew'
+        verbose_name = 'Movie Crew Member'
+        verbose_name_plural = 'Movie Crew Members'
+        unique_together = ('movie', 'person', 'role')
+        ordering = ['movie__title', 'role', 'person__name']
+
+    def __str__(self):
+        return f"{self.person.name} as {self.role} in {self.movie.title}"
+
+class MovieGenre(models.Model):
+    """
+    Explicit through-table for Movie ↔ Genre M2M.
+    Allows us to add extra fields (e.g. primary_genre flag) later.
+    """
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, db_index=True)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, db_index=True)
+
+    class Meta:
+        db_table         = 'movie_genre'
+        verbose_name     = 'Movie Genre'
+        verbose_name_plural = 'Movie Genres'
+        unique_together  = ('movie', 'genre')
+        ordering         = ['movie__title', 'genre__name']
+
+    def __str__(self):
+        return f"{self.movie.title} → {self.genre.name}"
+
+
+# =============================================================================
+# USER INTERACTION TABLES
+# =============================================================================
+
+class Review(models.Model):
+    """
+    User ratings and text reviews.
+    Sentiment score is calculated via TextBlob when the review is created.
+    """
+    user         = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='reviews')
+    movie        = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
+    rating       = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    review_text  = models.TextField(blank=True, default='')
+    sentiment_score = models.FloatField(null=True, blank=True)   # -1.0 to +1.0 (TextBlob)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review {self.rating}★ — {self.movie.title}"
+
+
+class WatchHistory(models.Model):
+    """
+    Tracks which movies a user has opened/watched.
+    Used for collaborative-filtering recommendations.
+    """
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='watch_history')
+    movie      = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='watch_history')
+    watched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-watched_at']
+
+    def __str__(self):
+        return f"{self.user} watched {self.movie.title}"
+
+
+class EmotionLog(models.Model):
+    """
+    Logs DeepFace-detected emotions to improve dynamic recommendations.
+    """
+    EMOTION_CHOICES = [
+        ('happy',    'Happy'),
+        ('sad',      'Sad'),
+        ('angry',    'Angry'),
+        ('fearful',  'Fearful'),
+        ('disgusted','Disgusted'),
+        ('surprised','Surprised'),
+        ('neutral',  'Neutral'),
+    ]
+
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='emotion_logs')
+    emotion     = models.CharField(max_length=50, choices=EMOTION_CHOICES, db_index=True)
+    captured_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-captured_at']
+
+    def __str__(self):
+        return f"Emotion: {self.emotion} ({self.captured_at:%Y-%m-%d})"

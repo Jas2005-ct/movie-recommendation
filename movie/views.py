@@ -1,301 +1,497 @@
-from django.shortcuts import render,get_object_or_404,redirect ,get_list_or_404
-from django.http import HttpResponse
-from .models import title
-from .models import cate,sho,year,casts,actees,direct,comedian,music,Review,genre
-from django.urls import reverse
-from django.conf import settings
+"""
+views.py — Template-only views. Zero live TMDB API calls.
+All data comes from local PostgreSQL via Django ORM.
+Context variables are serialized to dicts matching the existing template format.
+"""
+from movie.models import MovieCrew
+from django.views.generic import TemplateView
+from django.db import models
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from django.views import View
 from textblob import TextBlob
-from django.shortcuts import render
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from deepface import DeepFace
-import cv2
-import os
-import numpy as np
-import base64
-def first(request):
-    sort_option = request.GET.get('sort')
-    tit = title.objects.filter(year__gte=2005, year__lt=2024)
-    tit = tit.order_by('year')
-    if sort_option == "year":
-        tit = tit.order_by('year')
-    elif sort_option == "az":
-        tit = tit.order_by('name') 
-    return render(request, 'first.html', {'tit': tit})
+import json
+from django.core.paginator import Paginator
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.db import models
+from django.db.models import Prefetch
 
-def old(request):
-    sort_option = request.GET.get('sort')
-    tit = title.objects.filter(year__lt=2005)
-    tit = tit.order_by('year')
-    if sort_option == "year":
-        tit = tit.order_by('year')
-    elif sort_option == "az":
-        tit = tit.order_by('name') 
-    return render(request,'old.html',{'tit':tit})
+from .models import Movie, Genre, MovieGenre, Review
 
 
-def Tvshows(request):
-    sort_option = request.GET.get('sort')
-    sh = sho.objects.all()
-    if sort_option == "year_f":
-        sh = sh.order_by('year_f')
-    elif sort_option == "az":
-        sh = sh.order_by('name') 
-    return render(  request, 'Tvshow.html', {'sh': sh})
+# ---------------------------------------------------------------------------
+# aggressive monkeypatch for schema mismatch
+tmdb_id_field = Genre._meta.get_field('tmdb_id')
+tmdb_id_field.primary_key = False
+tmdb_id_field.unique = True
 
-def camera_pag(request):
-    return render(request, "cam.html")
+try:
+    id_field = Genre._meta.get_field('id')
+except:
+    id_field = models.AutoField(primary_key=True, name='id', db_column='id')
+    id_field.contribute_to_class(Genre, 'id')
 
-EMOTION_GENRE_MAPPING = {
-    'happy': ['Comedy', 'Action', 'Musical'],
-    'sad': ['Drama', 'Romance', 'Thriller'],
-    'angry': ['Action', 'Adventure', 'Crime'],
-    'surprise': ['Adventure', 'Sci-Fi', 'Fantasy'],
-    'fear': ['Horror', 'Drama', 'Thriller'],
-    'neutral': ['Drama', 'Family', 'Fantasy']
-}
-def capture_emotion(request):
-    emotion_result = None
-    movie_recommendations = None  
+id_field.primary_key = True
+Genre._meta.pk = id_field
+Genre._meta.db_table = 'genre'
+MovieGenre._meta.db_table = 'movie_genre'
 
-    if request.method == 'POST' and request.POST.get("image_data"):
-        image_data = request.POST["image_data"]
-        format, imgstr = image_data.split(';base64,')
-        ext = format.split('/')[-1]  # Get image extension (e.g., png, jpg)
-        file_name = f"captured.{ext}"
-        file_path = os.path.join("captured_images", file_name)
+# Update Foreign Keys
+for field in MovieGenre._meta.local_fields:
+    if field.name == 'genre':
+        field.remote_field.field_name = 'id'
 
-        # Save the image
-        img_data = ContentFile(base64.b64decode(imgstr), name=file_name)
-        file_path = default_storage.save(file_path, img_data)
+for field in Movie._meta.local_many_to_many:
+    if field.name == 'genres':
+        field.remote_field.field_name = 'id'
 
-        abs_file_path = os.path.join(default_storage.location, file_path)
+# Ensure Movie is imported for M2M lookup
+from .models import Movie
+Genre._meta._expire_cache()
+Movie._meta._expire_cache()
+MovieGenre._meta._expire_cache()
 
-        try:
-            # Analyze Emotion with DeepFace
-            emotion_analysis = DeepFace.analyze(img_path=abs_file_path, actions=['emotion'], enforce_detection=False)
-            emotion_result = emotion_analysis[0]['dominant_emotion']
+# Monkeypatch Movie to remove fields that don't exist in DB
+# Fields known to be missing: director, cast, cache_updated_at
+MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
+Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
+# for f_name in MISSING_MOVIE_FIELDS:
+#     if hasattr(Movie, f_name):
+#         delattr(Movie, f_name)
+if hasattr(Movie._meta, '_get_fields_cache'):
+    del Movie._meta._get_fields_cache
+Movie._meta._expire_cache()
 
-            # Get the genre based on the detected emotion
-            genres = EMOTION_GENRE_MAPPING.get(emotion_result, ['Drama', 'Family', 'Fantasy'])  # Default genres
+# ---------------------------------------------------------------------------
 
-            # Query movies from your database by genre
-            
-            movie_recommendations  = title.objects.filter(genres__genre__in=genres).distinct()
+# Helper: convert a Movie queryset to the dict format templates expect
+# ---------------------------------------------------------------------------
 
-        except Exception as e:
-            emotion_result = "Error: Could not analyze the emotion."
-
-        return render(request, 'emotion_cap.html', {
-            'emotion': emotion_result,
-            'movies': movie_recommendations  # Pass movie recommendations to the template
-        })
-
-    return render(request, 'emotion_cap.html')
-
-def emotion_based_search(request):
-    user_text = request.GET.get('emotion', '').strip()
-    sentiment_polarity = None
-    sentiment_subjectivity = None
-    movies = []
-
-    if user_text:
-        blob = TextBlob(user_text)
-        sentiment_polarity = blob.sentiment.polarity
-        sentiment_subjectivity = blob.sentiment.subjectivity
-        if sentiment_polarity > 0.7:
-            genres = ["Comedy", "Action", "Musical"]
-        elif sentiment_polarity > 0.2:
-            genres = ["Adventure", "Romance", "Fantasy"]
-        elif sentiment_polarity < -0.7:
-            genres = ["Drama", "Horror", "Thriller"]
-        elif sentiment_polarity < -0.2:
-            genres = ["Romance", "Crime", "Sci-Fi"]
-        else:
-            genres = ["Drama", "Family", "Fantasy"]
-
-        movies = title.objects.filter(genres__genre__in=genres).distinct()
-
-    return render(request, 'emotion_results.html', {
-        'user_text': user_text,
-        'sentiment_polarity': sentiment_polarity,
-        'sentiment_subjectivity': sentiment_subjectivity,
-        'movies': movies,
-    })
-
-
-def movie_det(request,id):
-    det = get_object_or_404(title, id=id)
-    genres = det.genres.all()
-
-    if request.method == "POST":
-        rating = request.POST.get("rating")
-        review_text = request.POST.get("review_text")
-
-        Review.objects.create(movie=det, rating=rating, review_text=review_text)
-        return redirect('mov_detail', id=id)
-    reviews = Review.objects.filter(movie=det)
-
-    return render(request, 'details.html', {'det': det,'genres':genres, 'reviews': reviews})
-
-def review(request,id):
-    movie = get_object_or_404(title,id=id)
-    reviews = Review.objects.filter(movie_id=movie)
-    return render(request, 'review.html', {'movie':movie, 'reviews': reviews})
-
-
-
-def sho_det(request,id):
-    det = get_object_or_404(sho,id=id)
-    return render(request, 'sho_det.html', {'det': det})
-
-def search_result(request):
-    query = request.GET.get('query', '').strip()
-    movies = title.objects.none()
-    actresses = actees.objects.none()
-    comedians = comedian.objects.none()
-    actors = casts.objects.none()
-    directors = direct.objects.none()
-    music_directors = music.objects.none()
-    genres = genre.objects.none()
-
-    if query.isdigit():
-        movies = title.objects.filter(year=query)
-    elif query:
-        movies |= title.objects.filter(name__icontains=query)
-        actors = casts.objects.filter(actor__icontains=query)
-        if actors.exists():
-            movies |= title.objects.filter(actor__in=actors)
-
-        direc = direct.objects.filter(director__icontains=query)
-        if direc.exists():
-            movies |= title.objects.filter(director__in=direc)
-
-        genres = genre.objects.filter(genre__icontains=query)
-        if genres.exists():
-            movies |= title.objects.filter(genres__in=genres)
-
-    actresses = actees.objects.filter(actress__icontains=query)
-    comedians = comedian.objects.filter(comedian__icontains=query)
-
-    return render(request, 'search_results.html', {
-        'movies': movies.distinct(),  
-        'actors': actors.distinct(),  
-        'directors': directors.distinct(),  
-        'genres': genres.distinct(),  
-        'music_directors': music_directors.distinct(),  
-        'actresses': actresses.distinct(), 
-        'comedians': comedians.distinct(), 
-        'query': query,
-    })
-
-def category(request):
-    cat1 = cate()
-    cat1.img = 'YEAR.jpg'
-    cat1.name = 'Year'
-    cat1.a = reverse('ye')
-
-    cat2 = cate()
-    cat2.img = 'ACTOR.jpg'
-    cat2.name = 'Actor'
-    cat2.a = reverse('act')
-
-
-    cat3 = cate()
-    cat3.img = 'DIRECT.jpg'
-    cat3.name = 'Director'
-    cat3.a = reverse('direct')
-
-
-    cat4 = cate()
-    cat4.img = 'ACTRESS.jpg'
-    cat4.name = 'Actress'
-    cat4.a = reverse('heroine')
-
-    cat5 = cate()
-    cat5.img = 'COMEDIAN.jpg'
-    cat5.name = 'COMEDIAN'
-    cat5.a = reverse('comedy')
-
-    cat6 = cate()
-    cat6.img = 'MUSIC.jpg'
-    cat6.name = 'MUSIC'
-    cat6.a = reverse('music_d')
-
-
-    ca = [cat1,cat2,cat3,cat4,cat5,cat6]
-
-    return render(request,'category.html',{'ca':ca})
-
-def year(request):
-    years = range(2000, 2025) 
-    return render(request, 'year.html', {'years': years})
-
-def year_based(request,year):
-    movies = title.objects.filter(year=year)
-    return render(request, 'year_b.html', {'movies': movies,'year':year})
-
-
-def actor(request):
-    acts = casts.objects.all()
-    return render(request, 'actor.html', {'acts': acts})
-
-def act_det(request,actor_id):
-    actor = get_object_or_404(casts, actor_id=actor_id)
-    movies = title.objects.filter(actor_id=actor_id)
-    return render(request, 'actor_det.html', {'actor': actor,'movies':movies})
-
-def actress(request):
-    actes = actees.objects.all()
-    return render(request, 'actress.html', {'actes': actes})
-
-def actress_det(request,actress_id):
-    actress = get_object_or_404(actees,actress_id=actress_id)
-    return render(request, 'actress_detail.html', {'actress': actress,'actress_id':actress_id})
-
-def director(request):
-    dir = direct.objects.all()
-    return render(request, 'director.html', {'dir': dir})
-
-def direct_det(request,director_id):
-    direc = get_object_or_404(direct, director_id=director_id)
-    movies = title.objects.filter(director_id=director_id)
-    return render(request, 'direct_det.html', {'direc': direc , 'movies' : movies})
-
-def comedians(request):
-    com = comedian.objects.all()
-    return render(request, 'comedian.html', {'com': com})
-
-def come_det(request,comedian_id):
-    com = get_object_or_404(comedian,comedian_id=comedian_id)
-    return render(request, 'come_det.html', {'com': com, 'comedian_id' : comedian_id})
-
-def musics(request): 
-    mus = music.objects.all()
-    return render(request, 'music.html', {'mus': mus})
-
-def musi_det(request,music_id):
-    musi = get_object_or_404(music,music_id=music_id)
-    return render(request, 'music_det.html', {'musi': musi, 'music_id' : music_id})
-
-def gen(request):
-    cat = genre.objects.all()
-    return render(request, 'genre.html', {'cat': cat})
-def gen_bas(request,genre_id):
-    genr = get_object_or_404(genre,genre_id=genre_id)
-    movies = genr.movies.all()
-    context = {
-        'genr': genr,
-        'movies': movies,
+def _movie_to_dict(m: Movie) -> dict:
+    """Map a Movie model instance → template-compatible dict."""
+    return {
+        'id':     m.tmdb_id,
+        'name':   m.title,
+        'rate':   round(m.vote_average, 1),
+        'year':   str(m.release_date.year) if m.release_date else '',
+        'year_f': str(m.release_date.year) if m.release_date else '',   # TV shows use year_f
+        'poster': m.poster_url,
     }
-    return render(request,'gen_based.html',context)
+
+
+def _format_queryset(qs, limit: int = 20) -> list:
+    """Convert a queryset to a list of template dicts, skip any with no tmdb_id."""
+    result = []
+    for m in qs:
+        if m.tmdb_id and m.poster_url:
+            result.append(_movie_to_dict(m))
+        if len(result) >= limit:
+            break
+    return result
+
+
+def _get_paginated_movies(request, qs, per_page: int = 24):
+    """
+    Paginates a queryset. Ensures valid records are filtered at the database level.
+    Returns: (list_of_dicts, page_obj)
+    """
+    # Ensure we only paginate records that have both a TMDB ID and a poster URL
+    qs = qs.filter(tmdb_id__isnull=False).exclude(poster_path='')
+    
+    paginator = Paginator(qs, per_page)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Map objects to dicts for template
+    result = [_movie_to_dict(m) for m in page_obj.object_list]
+            
+    return result, page_obj
+
+
+# =============================================================================
+#  HOME PAGE
+# =============================================================================
+
+class HomeView(TemplateView):
+    template_name = 'home_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        bollywood_qs = (
+            Movie.objects
+            .filter(content_type='movie', language='hi',adult=False)
+            .order_by('-popularity', '-vote_average')[:20]
+        )
+        south_qs = (
+            Movie.objects
+            .filter(content_type='movie', language__in=['ta', 'te', 'ml', 'kn'],adult=False)
+            .order_by('-popularity', '-vote_average')[:20]
+        )
+
+        bollywood    = _format_queryset(bollywood_qs, limit=20)
+        south_indian = _format_queryset(south_qs,    limit=20)
+
+        # Hero — deduplicated, top 30
+        seen, hero = set(), []
+        for m in bollywood + south_indian:
+            if m['id'] not in seen:
+                seen.add(m['id'])
+                hero.append(m)
+            if len(hero) >= 30:
+                break
+
+        context['tit']          = hero
+        context['bollywood']    = bollywood
+        context['south_indian'] = south_indian
+        return context
+
+
+# =============================================================================
+#  MOVIE DETAIL PAGE
+# =============================================================================
+
+class MovieDetailHTMLView(TemplateView):
+    template_name = 'details.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tmdb_id = self.kwargs.get('tmdb_id')
+        movie   = get_object_or_404(Movie, tmdb_id=tmdb_id)
+        # Fetch refined crew details for the template
+        # Passing person objects for director and main_actor as template uses .name
+        # Using model properties for other roles as they are returned as comma-separated strings
+        director = movie.crew.filter(role='Director').select_related('person').first()
+        main_actor = movie.crew.filter(role='Main Actor').select_related('person').first()
+        context['det'] = {
+            'id':            movie.tmdb_id,
+            'name':          movie.title,
+            'release_date':  movie.release_date,
+            'director':      director.person if director else None  ,
+            'main_actor':    main_actor.person if main_actor else None,
+            'main_actress':  movie.main_actress,
+            'music_director': movie.music_director,
+            'villain':       movie.villain,
+            'comedian':      movie.comedian,
+            'actor':         movie.main_actor or 'Various',
+            'rate':          round(movie.vote_average, 1),
+            'tagline':       getattr(movie, 'tagline', ''),
+            'description':   movie.overview,
+            'watch_trailer': getattr(movie, 'trailer_url', ''),
+            'img':           {'url': movie.poster_url},
+            'backdrop':      movie.backdrop_url,
+        }
+        context['genres'] = [
+            {'genre': g.name, 'id': g.tmdb_id}
+            for g in movie.genres.all()
+        ]
+        
+        # Add reviews to context
+        try:
+            context['reviews'] = movie.reviews.all().order_by('-created_at')
+        except Exception as e:
+            print(f"Error fetching reviews for {movie.tmdb_id}: {e}")
+            context['reviews'] = []
+        
+        return context
+
+
+# =============================================================================
+#  REVIEW SUBMISSION API
+# =============================================================================
+
+class ReviewCreateView(View):
+    """
+    Handles AJAX POST requests from details.html to save a new review.
+    Calculates sentiment score on the fly.
+    """
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            tmdb_id     = data.get('tmdb_id')
+            rating      = data.get('rating')
+            review_text = data.get('review_text', '')
+
+            movie = get_object_or_404(Movie, tmdb_id=tmdb_id)
+
+            # Sentiment Analysis
+            sentiment = 0.0
+            if review_text:
+                blob = TextBlob(review_text)
+                sentiment = blob.sentiment.polarity
+
+            review = Review.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                movie=movie,
+                rating=rating,
+                review_text=review_text,
+                sentiment_score=sentiment
+            )
+
+            return JsonResponse({
+                'id': review.id,
+                'status': 'success',
+                'message': 'Review published successfully!'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+# =============================================================================
+#  GENRE LIST PAGE
+# =============================================================================
+
+class GenreHTMLView(TemplateView):
+    template_name = 'genre.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        genres  = (
+            Genre.objects
+            .filter(movies__isnull=False,image__isnull=False)
+            .exclude(image='')
+            .distinct()
+            .order_by('name')
+        )
+        context['cat'] = [
+            {
+                'genre_id': g.id, 
+                'genre': g.name, 
+                'image_url': g.image.url if g.image else None
+            } 
+            for g in genres
+        ]
+        return context
+
+
+# =============================================================================
+#  GENRE DETAIL PAGE
+# =============================================================================
+
+class GenreDetailView(TemplateView):
+    template_name = 'genre_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context  = super().get_context_data(**kwargs)
+        genre_id = self.kwargs.get('genre_id')
+        genre    = get_object_or_404(Genre, id=genre_id)
+
+        sort_by = self.request.GET.get('sort', 'popularity')
+        
+        movies_qs = (
+            Movie.objects
+            .filter(genres__id=genre_id, content_type='movie', tmdb_id__isnull=False)
+        )
+        
+        if sort_by == 'year':
+            movies_qs = movies_qs.order_by('-release_date', '-popularity')
+        elif sort_by == 'az':
+            movies_qs = movies_qs.order_by('-vote_average', '-popularity')
+        else:
+            movies_qs = movies_qs.order_by('-popularity', '-vote_average')
+
+        movies_list, page_obj = _get_paginated_movies(self.request, movies_qs, per_page=24)
+        
+        context['movies']      = movies_list
+        context['page_obj']    = page_obj
+        context['genre_name']  = genre.name
+        return context
+
+
+# =============================================================================
+#  TV SHOWS PAGE
+# =============================================================================
+
+class TVShowHTMLView(TemplateView):
+    template_name = 'Tvshow.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sort_by = self.request.GET.get('sort', 'popularity')
+        
+        shows_qs = (
+            Movie.objects
+            .filter(content_type='tv', tmdb_id__isnull=False,adult=False)
+        )
+        
+        if sort_by == 'year':
+            shows_qs = shows_qs.order_by('-release_date', '-popularity')
+        elif sort_by == 'az':
+            shows_qs = shows_qs.order_by('-vote_average', '-popularity')
+        else:
+            shows_qs = shows_qs.order_by('-popularity', '-vote_average')
+
+        shows_list, page_obj = _get_paginated_movies(self.request, shows_qs, per_page=24)
+        
+        context['sh']       = shows_list
+        context['page_obj'] = page_obj
+        return context
+
+class TVShowDetailView(TemplateView):
+    template_name = 'show_details.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tmdb_id = self.kwargs.get('tmdb_id')
+        movie   = get_object_or_404(Movie, tmdb_id=tmdb_id)
+        if movie.poster_url:
+            context['det'] = {
+                'id':            movie.tmdb_id,
+                'name':          movie.title,
+                'release_date':  movie.release_date,
+                'director':      movie.director,
+                'music_director': movie.music_director,
+                'main_actor':    movie.main_actor,
+                'main_actress':  movie.main_actress,
+                'villain':       movie.villain,
+                'comedian':      movie.comedian,
+                'actor':         movie.cast,
+                'rate':          round(movie.vote_average, 1),
+                'tagline':       movie.tagline,
+                'description':   movie.overview,
+                'watch_trailer': movie.trailer_url,
+                'img':           {'url': movie.poster_url},
+                'backdrop':      movie.backdrop_url,
+            }
+            context['genres'] = [
+                {'genre': g.name, 'id': g.id}
+                for g in movie.genres.all()
+            ]
+        return context
+
+# =============================================================================
+#  CATEGORY PAGE  (static)
+# =============================================================================
+
+class CategoryHTMLView(TemplateView):
+    template_name = 'category.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ca'] = [
+            {'category_id': 'bollywood',    'title': 'Bollywood',     'desc': 'Popular Hindi movies', 'poster':'images/category/bollywood.webp'},
+            {'category_id': 'south_indian', 'title': 'South Indian',  'desc': 'Tamil, Telugu, Malayalam & Kannada', 'poster':'images/category/south_indian.webp'},
+            {'category_id': 'top_rated',    'title': 'Top Rated',     'desc': 'Highest rated movies in DB', 'poster':'images/category/top_rated.webp'},
+            {'category_id': 'tv_shows',     'title': 'TV Shows',      'desc': 'Popular Indian web series & shows', 'poster':'images/category/tv_shows.webp'},
+        ]
+        return context
+
+
+# =============================================================================
+#  MOVIE LIST PAGE (Paginated)
+# =============================================================================
+
+class MovieListView(TemplateView):
+    template_name = 'movie_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = self.kwargs.get('category', 'all')
+        sort_by  = self.request.GET.get('sort', 'popularity')
+        
+        qs = Movie.objects.filter(content_type='movie', tmdb_id__isnull=False,adult=False)
+        
+        title = "All Movies"
+        if category == 'bollywood':
+            qs = qs.filter(language='hi')
+            title = "Bollywood Hits"
+        elif category == 'south_indian':
+            qs = qs.filter(language__in=['ta','ml', 'kn'])
+            title = "South Indian Blockbusters"
+        elif category == 'top_rated':
+            # Skip popularity default if specifically asking for top rated
+            qs = qs.order_by('-vote_average', '-popularity')
+            title = "Top Rated Movies"
+
+        # Apply sorting if not already handled by top_rated logic
+        if category != 'top_rated':
+            if sort_by == 'year':
+                qs = qs.order_by('-release_date', '-popularity')
+            elif sort_by == 'az':
+                qs = qs.order_by('-vote_average', '-popularity')
+            else:
+                qs = qs.order_by('-popularity', '-vote_average')
+
+        movies_list, page_obj = _get_paginated_movies(self.request, qs, per_page=24)
+        
+        context['movies']    = movies_list
+        context['page_obj']  = page_obj
+        context['title']     = title
+        context['category']  = category
+        return context
 
 
 
+# =============================================================================
+#  SEARCH RESULTS PAGE
+# =============================================================================
+
+class MovieSearchView(TemplateView):
+    template_name = 'search_results.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('query', '').strip()
+        
+        if query:
+            # Use PostgreSQL Full-Text Search with weighting and ranking
+            # Title (A) is weighted highest, then Overview (B)
+            vector = SearchVector('title', weight='A') + \
+                     SearchVector('overview', weight='B')
+            
+            search_query = SearchQuery(query)
+            
+            # Filter and rank results
+            qs = Movie.objects.annotate(
+                rank=SearchRank(vector, search_query)
+            ).filter(rank__gte=0.1).order_by('-rank', '-popularity')
+        else:
+            qs = Movie.objects.none()
+
+        movies_list, page_obj = _get_paginated_movies(self.request, qs, per_page=24)
+        
+        context['movies']    = movies_list
+        context['page_obj']  = page_obj
+        context['query']     = query
+        context['count']     = page_obj.paginator.count
+        return context
 
 
+class SearchResultsAjaxView(View):
+    """
+    Search suggestions for AJAX autocomplete.
+    Returns a small JSON list of top matches.
+    """
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('query', '').strip()
+        if not query or len(query) < 2:
+            return JsonResponse({'results': []})
+
+        # Simple but fast search for autocomplete
+        # (FTS might be overkill here, icontains is fine for small top-N suggestion)
+        results = (
+            Movie.objects
+            .filter(title__icontains=query)
+            .order_by('-popularity')[:8]
+        )
+        
+        data = [
+            {
+                'id': m.tmdb_id,
+                'title': m.title,
+                'year': m.release_date.year if m.release_date else '',
+                'poster': m.poster_url,
+                'url': f"/movie/{m.tmdb_id}/"
+            }
+            for m in results
+        ]
+        
+        return JsonResponse({'results': data})
 
 
+# =============================================================================
+#  EMOTION CAPTURE PAGE
+# =============================================================================
 
-
+class EmotionCaptureHTMLView(TemplateView):
+    template_name = 'emotion_cap.html'

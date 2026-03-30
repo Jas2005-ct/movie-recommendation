@@ -1,128 +1,188 @@
-.featured h1 a {
-    padding: 10px 20px;
-    color: #fff;
-}
+/* =========================================================
+   StoryScroll — Movie Grid / Home Page (index.css)
+   ========================================================= */
 
-.featured h1 {
-    padding: 10px 20px;
-    color: #fff;
-}
-
-.featured {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 10px 20px;
-    margin-right: 30px;
-}
-
-.srt select {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #008080;
-    color: #000000;
-    cursor: pointer;
-    transition: 0.3s ease;
-    border-radius: 4px;
-    padding: 05px 10px;
-}
-
-.srt:hover {
-    background: #203a43;
-}
-
-.srt select option {
-    background-color: #1f1f1f;
-    border-radius: 4px;
-    padding: 10px;
-}
-
-.movies {
-    display: flex;
-    justify-content: center;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-    align-items: flex-start;
-}
-
-.movie {
-    background-color: #1f1f1f;
-    border: 1px solid #333;
-    border-radius: 10px;
-    text-align: center;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 250px;
-    margin: 10px;
-    text-decoration: none;
+/* Layout Container */
+.container {
+    padding: var(--sp-2xl) 5vw;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: var(--sp-xl);
 }
 
-a {
-    text-decoration: none;
+/* ── Hero Banner ───────────────────────────────────────── */
+.hero-banner {
+    position: relative;
+    min-height: 70vh;
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
+    display: flex;
+    align-items: flex-end;
+    padding: var(--sp-2xl) 5vw;
+    border-bottom: 1px solid var(--clr-border-dim);
 }
 
-.movie:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+.hero-content {
+    max-width: 800px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-md);
+    animation: fadeInUp var(--dur-slow) var(--ease-smooth);
 }
 
-.movie img {
-    width: 250px;
-    /* Fixed width */
-    height: 350px;
-    /* Fixed height */
-    object-fit: cover;
-    /* Ensures images fit nicely */
-    margin-bottom: 15px;
-    border-radius: 5px;
-    transition: transform 0.3s ease;
-}
-
-.movie:hover img {
-    transform: scale(1.1);
-}
-
-.movie h2 {
-    font-size: 1.2rem;
-    margin: 10px 0 5px;
+.hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
     color: #fff;
-    font-family: 'Playfair Display', serif;
-    text-decoration: wavy;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.8);
 }
 
-.movie p {
-    font-size: 1rem;
-    color: #ccc;
-    text-decoration: none;
+.hero-meta {
+    display: flex;
+    gap: var(--sp-lg);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--clr-accent-dim);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.btn-primary {
+    margin-top: var(--sp-sm);
+    padding: 12px 32px;
+    background: var(--clr-accent);
+    color: var(--clr-bg-deep);
+    font-weight: 700;
+    border-radius: var(--r-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all var(--dur-fast) var(--ease-smooth);
 }
 
-.close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
+.btn-primary:hover {
+    background: #fff;
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+}
+
+/* ── Section Header ─────────────────────────────────────── */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--clr-border-dim);
+    padding-bottom: var(--sp-md);
+}
+
+.glass-select {
+    background: var(--clr-bg-glass);
+    border: 1px solid var(--clr-border-dim);
+    color: var(--clr-text);
+    padding: 8px 16px;
+    border-radius: var(--r-sm);
+    outline: none;
     cursor: pointer;
-    color: #333;
-    font-weight: bold;
+    font-family: inherit;
 }
 
-.close-button:hover {
-    color: #000;
+.glass-select option {
+    background: var(--clr-bg-deep);
 }
+
+/* ── Movies Grid ────────────────────────────────────────── */
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--sp-lg);
+}
+
+.movie-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+    border-radius: var(--r-md);
+    transition: transform var(--dur-normal) var(--ease-smooth);
+}
+
+.movie-card:hover {
+    transform: translateY(-8px);
+}
+
+.poster-wrapper {
+    position: relative;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    aspect-ratio: 2 / 3;
+    box-shadow: var(--shadow-card);
+}
+
+.poster-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-smooth);
+}
+
+.movie-card:hover .poster-wrapper img {
+    transform: scale(1.05);
+}
+
+.overlay-glass {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 21, 37, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--dur-normal) var(--ease-smooth);
+}
+
+.movie-card:hover .overlay-glass {
+    opacity: 1;
+}
+
+.view-text {
+    color: var(--clr-accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transform: translateY(10px);
+    transition: transform var(--dur-normal) var(--ease-smooth);
+}
+
+.movie-card:hover .view-text {
+    transform: translateY(0);
+}
+
+.card-info {
+    padding: var(--sp-xs);
+}
+
+.card-info h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-info .meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--clr-text-muted);
+}
+
+.card-info .rate {
+    color: var(--clr-accent-dim);
+    font-weight: 600;
+}  
+/* Pagination */  
+.pagination-container { display: flex; justify-content: center; align-items: center; margin: var(--sp-lg) 0; gap: var(--sp-xs); flex-wrap: wrap; } 

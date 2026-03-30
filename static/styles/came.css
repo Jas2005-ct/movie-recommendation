@@ -1,26 +1,25 @@
-h1 {
-    font-size: 2rem;
-    color: white;
-}
-
 .show {
-    display: inline-block;
-    padding: 12px 20px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #ffffff;
-    background: linear-gradient(to right, #008080, #20c997);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--clr-bg-deep);
+    background: linear-gradient(135deg, var(--clr-accent) 0%, var(--clr-accent-dim) 100%);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--r-md);
     cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    margin: 10px;
-    gap: 35px;
+    transition: all var(--dur-normal) var(--ease-smooth);
+    box-shadow: 0 4px 14px rgba(232, 184, 75, 0.2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .show:hover {
-    background-color: #5c2fff;
-    transform: scale(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(232, 184, 75, 0.4);
+    filter: brightness(1.1);
 }
 
 video {
@@ -84,7 +83,7 @@ a {
     left: 50%;
     transform: translate(-50%, -50%);
     border: 1px solid transparent;
-    background: conic-gradient( from 0deg, #00eaff, #007bff, #00eaff);
+    background: conic-gradient(from 0deg, #00eaff, #007bff, #00eaff);
     mask: radial-gradient(circle, transparent 65%, black 66%);
     -webkit-mask: radial-gradient(circle, transparent 65%, black 66%);
     animation: rotateBorder 3s linear infinite;
@@ -94,6 +93,7 @@ a {
     0% {
         transform: translate(-50%, -50%) rotate(0deg);
     }
+
     100% {
         transform: translate(-50%, -50%) rotate(360deg);
     }

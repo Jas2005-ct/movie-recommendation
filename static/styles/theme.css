@@ -1,0 +1,198 @@
+/* =========================================================
+   StoryScroll — Global Design System (theme.css)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────── */
+:root {
+    /* Brand palette */
+    --clr-bg-deep: #080c14;
+    --clr-bg-mid: #0d1525;
+    --clr-bg-card: rgba(15, 22, 40, 0.75);
+    --clr-bg-glass: rgba(255, 255, 255, 0.04);
+
+    --clr-accent: #e8b84b;
+    /* cinematic gold */
+    --clr-accent-dim: #c9993a;
+    --clr-accent-glow: rgba(232, 184, 75, 0.25);
+
+    --clr-surface: #111827;
+    /* card surface */
+    --clr-border: rgba(232, 184, 75, 0.15);
+    --clr-border-dim: rgba(255, 255, 255, 0.06);
+
+    --clr-text: #e8ecf4;
+    --clr-text-muted: #8b93a8;
+    --clr-text-dim: #4e576b;
+
+    /* Typography */
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+
+    /* Spacing */
+    --sp-xs: 4px;
+    --sp-sm: 8px;
+    --sp-md: 16px;
+    --sp-lg: 24px;
+    --sp-xl: 40px;
+    --sp-2xl: 64px;
+
+    /* Radii */
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 20px;
+    --r-xl: 32px;
+
+    /* Shadows */
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.55);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px var(--clr-border);
+    --shadow-glow: 0 0 32px var(--clr-accent-glow);
+
+    /* Transitions */
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-fast: 0.18s;
+    --dur-normal: 0.3s;
+    --dur-slow: 0.5s;
+}
+
+/* ── Reset & Base ───────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    background-color: var(--clr-bg-deep);
+    background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232, 184, 75, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, #080c14 0%, #0d1525 50%, #0a1020 100%);
+    background-attachment: fixed;
+    color: var(--clr-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+.page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--clr-bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--clr-accent-dim);
+    border-radius: 3px;
+}
+
+/* ── Utility: Gold badge / tag ──────────────────────────── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--clr-accent-glow);
+    border: 1px solid var(--clr-accent-dim);
+    color: var(--clr-accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+}
+
+/* ── Utility: Section heading ───────────────────────────── */
+.section-heading {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    letter-spacing: -0.01em;
+}
+
+.section-heading span {
+    color: var(--clr-accent);
+}
+
+/* ── Divider ────────────────────────────────────────────── */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--clr-border), transparent);
+    margin: var(--sp-lg) 0;
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    from {
+        background-position: -400px 0;
+    }
+
+    to {
+        background-position: 400px 0;
+    }
+}
+
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px var(--clr-accent-glow);
+    }
+
+    50% {
+        box-shadow: var(--shadow-glow);
+    }
+}

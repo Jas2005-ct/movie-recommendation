@@ -1,25 +1,59 @@
-{% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
-<link rel="stylesheet" href="{% static 'styles/emo_cap.css' %}"> {% endblock %}
-<main>
+{% extends 'header.html' %}
+{% load static %}
 
-    <option value="a to z"></option>
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/index.css' %}">
+{% endblock %}
 
-    <section class="featured">
-        <h1>Movies Related to Your Emotion: {{emotion}}</h1>
-        <div class="movies">
-            {% if movies %} {% for tits in movies %}
-            <div class="movie">
-                <a href="{% url 'mov_detail' id=tits.id %}">
-                    <img src="{{tits.img.url}}">
-                </a>
-                <h2>{{tits.name}} </h2>
-                <p>{{tits.rate}}</p>
-                <p class=" year ">{{tits.year}}</p>
-            </div> {% endfor %} </div>
+{% block content %}
+<main class="container">
+    <div class="section-header">
+        <h2 class="section-heading">Movies matching emotion: <span>{{ emotion|default:"Waiting for capture..." }}</span>
+        </h2>
+
+        <!-- Emotion Capture Trigger (will be wired to webcam via JS later) -->
+        <button id="capture-emotion-btn" class="btn-primary" style="display: flex; gap: 8px; align-items: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            Capture Emotion
+        </button>
+    </div>
+
+    <div class="movies-grid" id="emotion-results-grid">
+        {% if movies %}
+        {% for tits in movies %}
+        <div class="movie-card">
+            <a href="#" class="poster-link">
+                <div class="poster-wrapper">
+                    {% if tits.poster %}
+                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
+                    {% else %}
+                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                    {% endif %}
+                    <div class="overlay-glass">
+                        <span class="view-text">View Details</span>
+                    </div>
+                </div>
+            </a>
+            <div class="card-info">
+                <h3>{{tits.name}}</h3>
+                <div class="meta">
+                    <span class="rate">★ {{tits.rate}}</span>
+                    <span class="year">{{tits.year}}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
         {% else %}
-        <p>No movies found for this emotion. Please try again later.</p>
+        <div style="grid-column: 1 / -1; padding: var(--sp-2xl) 0; text-align: center; color: var(--clr-text-muted);">
+            <div style="font-size: 3rem; margin-bottom: var(--sp-md); opacity: 0.5;">🎭</div>
+            <p style="font-size: 1.1rem;">Click "Capture Emotion" above to allow webcam access and get customized movie
+                recommendations based on your current mood.</p>
+        </div>
         {% endif %}
-    </section>
-
+    </div>
 </main>
-{%endblock%}
+{% endblock %}

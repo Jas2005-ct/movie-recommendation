@@ -1,115 +1,138 @@
+/* =========================================================
+   StoryScroll — Search Results Grid (searchr.css)
+   ========================================================= */
+
 .featured h1 {
-    padding: 10px 20px;
-    text-decoration: dotted;
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    padding: var(--sp-xl) var(--sp-xl) var(--sp-sm);
+    letter-spacing: -0.01em;
 }
 
 .movies {
     display: flex;
     justify-content: center;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 30px;
     flex-wrap: wrap;
-    margin-top: 20px;
-    align-items: flex-start;
+    gap: var(--sp-lg);
+    padding: var(--sp-md) var(--sp-xl) var(--sp-2xl);
+    animation: fadeInUp 0.4s var(--ease-smooth) both;
 }
 
 .movie {
-    background-color: #1f1f1f;
-    border: 1px solid #333;
-    border-radius: 10px;
+    position: relative;
+    background: var(--clr-bg-card);
+    border: 1px solid var(--clr-border-dim);
+    border-radius: var(--r-lg);
     text-align: center;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 250px;
-    margin: 10px;
-    text-decoration: none;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--dur-normal) var(--ease-smooth),
+        box-shadow var(--dur-normal) var(--ease-smooth),
+        border-color var(--dur-normal) var(--ease-smooth);
+    max-width: 220px;
+    width: 220px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-}
-
-a {
-    text-decoration: none;
+    backdrop-filter: blur(10px);
 }
 
 .movie:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--clr-border);
+}
+
+.movie::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--clr-accent);
+    opacity: 0;
+    transition: opacity var(--dur-normal) var(--ease-smooth);
+    pointer-events: none;
+}
+
+.movie:hover::after {
+    opacity: 1;
 }
 
 .movie img {
-    width: 250px;
-    /* Fixed width */
-    height: 350px;
-    /* Fixed height */
+    width: 100%;
+    height: 310px;
     object-fit: cover;
-    /* Ensures images fit nicely */
-    margin-bottom: 15px;
-    border-radius: 5px;
-    transition: transform 0.3s ease;
+    display: block;
+    transition: transform var(--dur-slow) var(--ease-smooth);
 }
 
 .movie:hover img {
-    transform: scale(1.1);
+    transform: scale(1.06);
+}
+
+.movie::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, var(--clr-bg-deep) 0%, transparent 100%);
+    z-index: 1;
+    pointer-events: none;
 }
 
 .movie h2 {
-    font-size: 1.2rem;
-    margin: 10px 0 5px;
-    color: #fff;
-    font-family: 'Playfair Display', serif;
-    text-decoration: wavy;
+    position: relative;
+    z-index: 2;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    padding: 10px 12px 4px;
 }
 
 .movie p {
-    font-size: 1rem;
-    color: #ccc;
-    text-decoration: none;
+    position: relative;
+    z-index: 2;
+    font-size: 0.78rem;
+    color: var(--clr-accent);
+    padding: 0 12px 14px;
 }
 
-footer {
-    text-align: center;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.85);
-    color: #fff;
-    margin-top: 20px;
-    text-decoration: none;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
-}
-
+/* ── Modal (for search results that use it) ──────────────── */
 .movie-modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(8px);
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    text-decoration: none;
 }
 
 .modal-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    padding: var(--sp-xl);
+    border-radius: var(--r-xl);
     text-align: center;
     width: 90%;
-    max-width: 600px;
+    max-width: 560px;
     position: relative;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
-    text-decoration: none;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.28s var(--ease-smooth);
+    color: var(--clr-text);
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: scale(0.94);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -118,39 +141,47 @@ footer {
 
 .modal-content img {
     max-width: 100%;
-    max-height: 300px;
+    max-height: 320px;
     width: auto;
     height: auto;
-    margin: 10px 0;
-    border-radius: 5px;
+    margin: var(--sp-md) auto;
+    border-radius: var(--r-md);
     object-fit: cover;
 }
 
 .modal-content p {
-    font-size: 1rem;
-    margin: 10px 0;
+    font-size: 0.92rem;
+    color: var(--clr-text-muted);
+    margin: var(--sp-sm) 0;
 }
 
 .modal-content a {
-    color: #070e13;
-    text-decoration: none;
-    font-weight: bold;
+    color: var(--clr-accent);
+    font-weight: 700;
 }
 
 .modal-content a:hover {
-    text-decoration: none;
+    color: #f5d78f;
 }
 
 .close-button {
     position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
+    top: 14px;
+    right: 18px;
+    font-size: 22px;
     cursor: pointer;
-    color: #333;
-    font-weight: bold;
+    color: var(--clr-text-muted);
+    font-weight: 300;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background var(--dur-fast), color var(--dur-fast);
 }
 
 .close-button:hover {
-    color: #000;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--clr-text);
 }
