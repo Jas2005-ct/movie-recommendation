@@ -80,7 +80,7 @@ import dj_database_url
 
 _DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if _DATABASE_URL:
+if _DATABASE_URL and _DATABASE_URL.startswith('postgres'):
     DATABASES = {
         'default': dj_database_url.config(
             default=_DATABASE_URL,
@@ -89,7 +89,7 @@ if _DATABASE_URL:
         )
     }
 else:
-    # Fallback to SQLite only for quick tests without PG available
+    # Fallback to SQLite only if DATABASE_URL is missing or local
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
