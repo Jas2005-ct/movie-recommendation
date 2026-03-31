@@ -8,14 +8,11 @@ ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
-# libpq-dev is for PostgreSQL
-# libgl1-mesa-glx and libglib2.0-0 are for OpenCV (used by DeepFace later)
+# Install only necessary system dependencies for now
+# libpq-dev is required for PostgreSQL
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
