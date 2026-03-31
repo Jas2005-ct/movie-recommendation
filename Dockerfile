@@ -25,8 +25,8 @@ COPY . /app/
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Expose the port gunicorn will run on (Render uses 10000)
+# Expose the port (Render defaults to 10000)
 EXPOSE 10000
 
-# Start Gunicorn
-CMD ["gunicorn", "movies.wsgi:application", "--bind", "0.0.0.0:10000"]
+# Start Gunicorn (Using $PORT from Render)
+CMD gunicorn movies.wsgi:application --bind 0.0.0.0:$PORT

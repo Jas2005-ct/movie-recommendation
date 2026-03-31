@@ -82,12 +82,10 @@ _DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if _DATABASE_URL and _DATABASE_URL.startswith('postgres'):
     DATABASES = {
-        'default': dj_database_url.config(
-            default=_DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': dj_database_url.parse(_DATABASE_URL)
     }
+    DATABASES['default']['CONN_MAX_AGE'] = 600
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 else:
     # Fallback to SQLite only if DATABASE_URL is missing or local
     DATABASES = {
