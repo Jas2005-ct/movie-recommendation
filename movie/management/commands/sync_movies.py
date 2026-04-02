@@ -196,6 +196,18 @@ class Command(BaseCommand):
                     rd_raw = item.get('release_date') or item.get('first_air_date') or ''
                     release_date = rd_raw[:10] if len(rd_raw) >= 10 else None
 
+                    # Heuristic for Adult/Erotic content (since TMDB often marks these as safe for TV shows)
+                    ADULT_KEYWORDS = [
+                        'erotic', 'sexy', '18+', 'adult web series', 'hot web series', 
+                        'ullu', 'altbalaji', 'mastram', 'charmsukh', 'palang tod', 'kavita bhabhi'
+                    ]
+                    
+                    is_adult = item.get('adult', False)
+                    if not is_adult:
+                        text_to_check = ( (item.get('title') or '') + ' ' + (item.get('name') or '') + ' ' + (item.get('overview') or '') ).lower()
+                        if any(word in text_to_check for word in ADULT_KEYWORDS):
+                            is_adult = True
+
                     defaults = {
                         'title':          item.get('title') or item.get('name') or 'Unknown',
                         'original_title': item.get('original_title') or item.get('original_name') or '',
@@ -208,6 +220,7 @@ class Command(BaseCommand):
                         'vote_count':     item.get('vote_count', 0),
                         'popularity':     item.get('popularity', 0.0),
                         'release_date':   release_date,
+                        'adult':          is_adult,
                     }
 
                     movie_obj, is_new = Movie.objects.update_or_create(

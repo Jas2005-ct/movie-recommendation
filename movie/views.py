@@ -280,7 +280,7 @@ class GenreDetailView(TemplateView):
         
         movies_qs = (
             Movie.objects
-            .filter(genres__id=genre_id, content_type='movie', tmdb_id__isnull=False)
+            .filter(genres__id=genre_id, content_type='movie', tmdb_id__isnull=False, adult=False)
         )
         
         if sort_by == 'year':
@@ -444,7 +444,7 @@ class MovieSearchView(TemplateView):
             # Filter and rank results
             qs = Movie.objects.annotate(
                 rank=SearchRank(vector, search_query)
-            ).filter(rank__gte=0.1).order_by('-rank', '-popularity')
+            ).filter(rank__gte=0.1, adult=False).order_by('-rank', '-popularity')
         else:
             qs = Movie.objects.none()
 
