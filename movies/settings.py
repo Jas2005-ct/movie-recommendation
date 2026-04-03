@@ -18,7 +18,10 @@ DEBUG      = os.environ.get('DEBUG', 'True') == 'True'
 # TMDB key — only used by management command, never during a user request
 TMDB_API_KEY = os.environ.get('TMDB_API_KEY', '')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [host.strip().replace('https://', '').replace('http://', '') for host in os.environ.get('ALLOWED_HOSTS', '*').split(',') if host.strip()]
+
+# CSRF Trusted Origins (required for Django 4.0+ with custom domains)
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host and host != '*' and '.' in host]
 
 # =============================================================================
 # Application definition
