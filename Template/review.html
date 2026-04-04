@@ -1,62 +1,58 @@
-{% load static %} {% static "images" as baseUrl %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'header.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{movie.name}}</title>
-    <link rel="stylesheet" href="{% static 'styles/reviewstyle.css' %}">
-    <link rel="icon" href="{% static 'images/icon3.jpg' %}">
-</head>
+{% block sepr_css %}
+<link rel="stylesheet" href="{% static 'styles/reviewstyle.css' %}">
+{% endblock %}
 
-<body>
-
-    <header>
-        <a href="{% url 'index'%}">
-            <div class="logo">StoryScroll</div>
-        </a>
-        <nav>
-            <ul class="navigation">
-                <li><a href="{% url 'index' %}">Movies</a></li>
-                <li><a href="{% url 'show' %}">TV Shows</a></li>
-                <li><a href="{% url 'genre' %}">Genre</a></li>
-                <li><a href="{% url 'sort' %}">Category</a></li>
-                <li><a href="{% url 'camera_page' %}">Capture Emotion</a></li>
-                <video id="camera-stream" autoplay style="display: none;"></video>
-                <button id="capture-button" style="display: none;">Capture</button>
-                <canvas id="capture-canvas" style="display: none;"></canvas>
-            </ul>
-        </nav>
-        <form method="GET" action="{% url 'search_results' %}">
-            <input type="text" name="query" placeholder="Search by name or year" value="{{ query }}">
-            <button type="submit">Search</button>
-        </form>
-    </header>
-    <main>
-        <section class="review-list">
-            <i><h1>Pov Hub</h1></i>
-            <div class="movie-poster">
-                <center><img src="{{movie.img.url}}" alt="{{ movie.name }} Poster"></center>
+{% block content %}
+<main class="container-fluid px-3 px-md-5 mt-4">
+    <section class="review-list text-center">
+        <h1 class="section-heading mb-4 italic">Pov <span>Hub</span></h1>
+        
+        <div class="row g-4 justify-content-center align-items-center">
+            <!-- Movie Poster -->
+            <div class="col-12 col-md-4">
+                <div class="movie-poster shadow-lg rounded overflow-hidden mx-auto" style="max-width: 300px;">
+                    <img src="{{movie.img.url}}" class="img-fluid" alt="{{ movie.name }} Poster">
+                </div>
             </div>
-            <div class="carousel">
-                <div class="carousel-container" id="reviewsContainer">
-                    {% if reviews.exists %} {% for review in reviews %}
-                    <div class="review">
-                        <p><strong>Rating:</strong> {{ review.rating }} ⭐</p>
-                        <p>{{ review.review_text }}</p>
+
+            <!-- Review Carousel -->
+            <div class="col-12 col-md-8">
+                <div class="carousel position-relative overflow-hidden bg-dark p-4 rounded shadow">
+                    <div class="carousel-container d-flex transition-smooth" id="reviewsContainer">
+                        {% if reviews.exists %}
+                            {% for review in reviews %}
+                            <div class="review flex-shrink-0 w-100 p-3">
+                                <div class="review-card p-4 rounded border border-secondary bg-opacity-25 bg-secondary text-white">
+                                    <p class="h4 mb-3"><strong>Rating:</strong> {{ review.rating }} ⭐</p>
+                                    <p class="lead italic">"{{ review.review_text }}"</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="w-100 p-5 text-muted">
+                                <p class="h5">No reviews submitted yet.</p>
+                            </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}{% else %}
-                    <p>No reviews submitted yet.</p>
+                    
+                    {% if reviews.count > 1 %}
+                    <div class="carousel-controls mt-4">
+                        <button class="btn btn-outline-accent me-2" onclick="slide(-1)">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></svg>
+                        </button>
+                        <button class="btn btn-outline-accent" onclick="slide(1)">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"></path></svg>
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
             </div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2024 StoryScroll. All Rights Reserved.</p>
-    </footer>
-    <script src="{% static 'js/reviewstyle.js' %} "></script>
-</body>
+        </div>
+    </section>
+</main>
 
-</html>
+<script src="{% static 'js/reviewstyle.js' %}"></script>
+{% endblock %}

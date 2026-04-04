@@ -7,45 +7,36 @@
 <link rel="stylesheet" href="{% static 'styles/genre.css' %}">
 {% endblock %}
 
-<main class="container">
+<main class="container-fluid px-3 px-md-5 mt-4">
     <div class="section-header">
         <h2 class="section-heading">Browse <span>Genres</span></h2>
     </div>
 
-    <div class="genre-grid">
+    <div class="row g-4" id="genre-grid-main">
         {% for c in cat %}
-        <a href="{% url 'genre_detail' c.genre_id %}" class="genre-card genre-{{ c.genre|lower|slugify }}">
-            <div class="genre-image-container">
-                <img src="{% if c.image_url %}{{ c.image_url }}{% else %}{% static 'images/genres/' %}{{ c.genre|lower|slugify }}.png{% endif %}"
-                    alt="{{ c.genre }}"
-                    onerror="this.src='https://via.placeholder.com/400x300/10141e/ffffff?text={{ c.genre }}'">
-            </div>
-            <div class="genre-info">
-                <h3>{{ c.genre }}
-                    <span class="genre-icon">
-                        {% if 'Action' in c.genre %}
-                        {% elif 'Comedy' in c.genre %}
-                        {% elif 'Drama' in c.genre %}
-                        {% elif 'Science Fiction' in c.genre %}
-                        {% elif 'Fantasy' in c.genre %}
-                        {% elif 'Animation' in c.genre %}
-                        {% elif 'Thriller' in c.genre or 'Horror' in c.genre %}
-                        {% elif 'Romance' in c.genre %}
-                        {% else %}{% endif %}
-                    </span>
-                </h3>
-                <p class="genre-subtitle">
-                    {% if 'Action' in c.genre %}Adrenaline, Thrills, Explosions
-                    {% elif 'Comedy' in c.genre %}Laughs, Happiness, Fun
-                    {% elif 'Drama' in c.genre %}Emotional moments, Story
-                    {% elif 'Science Fiction' in c.genre %}Future Worlds, Aliens
-                    {% elif 'Animation' in c.genre %}Animated, Characters
-                    {% elif 'Horror' in c.genre %}Scary, Suspense, Fear
-                    {% elif 'Romance' in c.genre %}Love, Relationships
-                    {% else %}Explore amazing movies{% endif %}
-                </p>
-            </div>
-        </a>
+        <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+            <a href="{% url 'genre_detail' c.genre_id %}" class="genre-card genre-{{ c.genre|lower|slugify }} h-100">
+                <div class="genre-image-container">
+                    <img src="{% if c.image_url %}{{ c.image_url }}{% else %}{% static 'images/genres/' %}{{ c.genre|lower|slugify }}.png{% endif %}"
+                        alt="{{ c.genre }}"
+                        class="img-fluid"
+                        onerror="this.src='https://via.placeholder.com/400x300/10141e/ffffff?text={{ c.genre }}'">
+                </div>
+                <div class="genre-info">
+                    <h3>{{ c.genre }}</h3>
+                    <p class="genre-subtitle">
+                        {% if 'Action' in c.genre %}Adrenaline, Thrills, Explosions
+                        {% elif 'Comedy' in c.genre %}Laughs, Happiness, Fun
+                        {% elif 'Drama' in c.genre %}Emotional moments, Story
+                        {% elif 'Science Fiction' in c.genre %}Future Worlds, Aliens
+                        {% elif 'Animation' in c.genre %}Animated, Characters
+                        {% elif 'Horror' in c.genre %}Scary, Suspense, Fear
+                        {% elif 'Romance' in c.genre %}Love, Relationships
+                        {% else %}Explore amazing movies{% endif %}
+                    </p>
+                </div>
+            </a>
+        </div>
         {% endfor %}
     </div>
 </main>

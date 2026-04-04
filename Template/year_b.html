@@ -1,15 +1,19 @@
 {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
 <link rel="stylesheet" href="{% static 'styles/year_based.css' %}"> {% endblock %}
-<main>
+<main class="container-fluid px-3 px-md-5 mt-4">
     <section class="featured">
-        <h1>Movies In {{year}}</h1>
-        <div class="movies">
+        <h1 class="section-heading mb-4 text-center">Movies In <span>{{year}}</span></h1>
+        <div class="row g-4 justify-content-center">
             {% for movie in movies %}
-            <div class="movie">
-                <img src="{{movie.img.url}}" alt="JAILER">
-                <h2>{{movie.name}} </h2>
-                <p>{{movie.rate}}</p>
-                <p class="year">{{movie.year}}</p>
+            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                <div class="movie shadow-sm h-100 p-0 overflow-hidden">
+                    <img src="{{movie.img.url}}" class="img-fluid" alt="{{movie.name}}">
+                    <div class="p-2 text-center">
+                        <h2 class="h6 mb-1 text-truncate" title="{{movie.name}}">{{movie.name}}</h2>
+                        <p class="small mb-1 text-accent">★ {{movie.rate}}</p>
+                        <p class="small mb-0 text-muted">{{movie.year}}</p>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
