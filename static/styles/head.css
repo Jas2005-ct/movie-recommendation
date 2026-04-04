@@ -43,7 +43,7 @@ header .logo:hover {
 }
 
 /* ── Navigation ─────────────────────────────────────────── */
-header nav ul.navigation {
+header .navigation {
     list-style: none;
     display: flex;
     gap: var(--sp-xs);
@@ -51,26 +51,26 @@ header nav ul.navigation {
     margin: 0;
 }
 
-header nav ul.navigation li {
+header .navigation .nav-item {
     display: flex;
     align-items: center;
 }
 
-header nav ul.navigation li a {
+header .navigation .nav-item a.nav-link {
     position: relative;
     display: inline-block;
-    padding: 6px 14px;
+    padding: 6px 14px !important;
     font-size: 0.82rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--clr-text-muted);
+    color: var(--clr-text-muted) !important;
     border-radius: var(--r-sm);
     transition: color var(--dur-fast) var(--ease-smooth),
         background var(--dur-fast) var(--ease-smooth);
 }
 
-header nav ul.navigation li a::after {
+header .navigation .nav-item a.nav-link::after {
     content: '';
     position: absolute;
     left: 14px;
@@ -82,13 +82,23 @@ header nav ul.navigation li a::after {
     transition: width var(--dur-slow) var(--ease-smooth);
 }
 
-header nav ul.navigation li a:hover {
-    color: var(--clr-accent);
-    background: rgba(232, 184, 75, 0.07);
+header .navigation .nav-item a.nav-link:hover {
+    color: var(--clr-accent) !important;
+    background: rgba(232, 184, 75, 0.07) !important;
 }
 
-header nav ul.navigation li a:hover::after {
+header .navigation .nav-item a.nav-link:hover::after {
     width: calc(100% - 28px);
+}
+
+/* Navbar Toggler Visibility */
+.navbar-toggler {
+    border-color: var(--clr-border) !important;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgb(232, 184, 75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
 }
 
 /* ── Search form ─────────────────────────────────────────── */
@@ -96,6 +106,20 @@ header nav ul.navigation li a:hover::after {
     position: relative;
     display: flex;
     align-items: center;
+    height: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .search-container {
+        margin: var(--sp-md) 0;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    header form {
+        width: 100% !important;
+        max-width: 400px;
+    }
 }
 
 #search-results {
@@ -162,13 +186,13 @@ header nav ul.navigation li a:hover::after {
 }
 
 header form {
-    display: flex;
-    align-items: center;
-    gap: 0;
+    display: inline-flex;
+    align-items: stretch;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--clr-border-dim);
     border-radius: var(--r-md);
     overflow: hidden;
+    height: 40px; /* Fixed robust height */
     transition: border-color var(--dur-normal) var(--ease-smooth),
         box-shadow var(--dur-normal) var(--ease-smooth);
 }
@@ -180,9 +204,10 @@ header form:focus-within {
 
 header form input.tex {
     background: transparent;
-    border: none;
-    outline: none;
-    padding: 9px 16px;
+    border: none !important;
+    outline: none !important;
+    padding: 0 16px;
+    height: 100%;
     font-size: 0.88rem;
     font-family: var(--font-body);
     color: var(--clr-text);
@@ -195,12 +220,13 @@ header form input.tex::placeholder {
 }
 
 header form input.tex:focus {
-    width: 280px;
+    width: 250px;
 }
 
 header form button.sea {
     flex-shrink: 0;
-    padding: 9px 18px;
+    padding: 0 18px;
+    height: 100%;
     background: linear-gradient(135deg, var(--clr-accent) 0%, var(--clr-accent-dim) 100%);
     border: none;
     color: #0d1525;
@@ -209,8 +235,10 @@ header form button.sea {
     font-family: var(--font-body);
     letter-spacing: 0.04em;
     cursor: pointer;
-    transition: filter var(--dur-fast) var(--ease-smooth),
-        transform var(--dur-fast) var(--ease-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter var(--dur-fast) var(--ease-smooth);
 }
 
 header form button.sea:hover {
