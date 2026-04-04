@@ -6,20 +6,20 @@
 <link rel="stylesheet" href="{% static 'styles/details.css' %}">
 {% endblock %}
 
-<main>
+<main class="container-xl py-4">
     {% if det %}
     <section class="movie-details">
         <h1>{{ det.name }}</h1>
-        <div class="details-wrapper">
-            <div class="movie-poster">
+        <div class="row g-4 details-wrapper">
+            <div class="col-12 col-md-4 col-lg-3 movie-poster text-center text-md-start">
                 {% if det.img.url %}
-                <img src="{{ det.img.url }}" alt="{{ det.name }} Poster" loading="lazy">
+                <img src="{{ det.img.url }}" class="img-fluid" alt="{{ det.name }} Poster" loading="lazy">
                 {% else %}
-                <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                <img src="https://via.placeholder.com/500x750?text=No+Poster" class="img-fluid" alt="No Poster">
                 {% endif %}
             </div>
 
-            <div class="movie-info">
+            <div class="col-12 col-md-8 col-lg-9 movie-info">
                 {% if det.tagline %}
                 <p style="font-size: 1.2rem; font-style: italic; color: var(--clr-accent);">"{{ det.tagline }}"</p>
                 {% endif %}
@@ -75,14 +75,15 @@
     <div class="divider"></div>
     
     <section class="review-section">
-        <div class="reviews-header">
+        <div class="reviews-header flex-column flex-md-row">
             <h2>User Reviews</h2>
-            <p class="review-count">{% if reviews %}{{ reviews.count }} review{{ reviews.count|pluralize }}{% else %}No reviews yet{% endif %}</p>
+            <p class="review-count mt-2 mt-md-0">{% if reviews %}{{ reviews.count }} review{{ reviews.count|pluralize }}{% else %}No reviews yet{% endif %}</p>
         </div>
 
-        <div id="reviews-list">
+        <div id="reviews-list" class="row g-3">
             {% for review in reviews %}
-            <div class="review-card">
+            <div class="col-12">
+                <div class="review-card">
                 <div class="review-meta">
                     <span class="review-user">
                         {% if review.user %}{{ review.user.username }}{% else %}Anonymous Visitor{% endif %}
@@ -106,10 +107,11 @@
                     {% endif %}
                 </div>
                 {% endif %}
+                </div>
             </div>
             {% empty %}
-            <div class="no-reviews">
-                <p>Be the first to review this movie!</p>
+            <div class="col-12 text-center text-muted py-5">
+                <p class="fs-5">Be the first to review this movie!</p>
             </div>
             {% endfor %}
         </div>

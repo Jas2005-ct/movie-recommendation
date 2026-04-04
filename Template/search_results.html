@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{% static 'styles/index.css' %}">
 {% endblock %}
 
-<main class="container">
+<main class="container-fluid px-3 px-md-5 mt-4">
     <div class="section-header" style="flex-direction: row; align-items: center; border-bottom: 1px solid var(--clr-border-dim); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-md);">
         <div class="header-left" style="display: flex; flex-direction: column; gap: 4px;">
             <h2 class="section-heading" style="margin: 0;">Search Results for <span>"{{ query }}"</span></h2>
@@ -16,34 +16,36 @@
         </div>
     </div>
 
-    <div class="movies-grid">
+    <div class="row g-4 mt-2">
         {% for tits in movies %}
-        <div class="movie-card">
-            <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
-                <div class="poster-wrapper">
-                    {% if tits.poster %}
-                    <img src="{{tits.poster}}" alt="{{tits.name}}" loading="lazy">
-                    {% else %}
-                    <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
-                    {% endif %}
-                    <div class="overlay-glass">
-                        <span class="view-text">View Details</span>
+        <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+            <div class="movie-card h-100">
+                <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
+                    <div class="poster-wrapper">
+                        {% if tits.poster %}
+                        <img src="{{tits.poster}}" class="img-fluid rounded" alt="{{tits.name}}" loading="lazy">
+                        {% else %}
+                        <img src="https://via.placeholder.com/500x750?text=No+Poster" class="img-fluid rounded" alt="No Poster">
+                        {% endif %}
+                        <div class="overlay-glass">
+                            <span class="view-text">View Details</span>
+                        </div>
                     </div>
-                </div>
-            </a>
-            <div class="card-info">
-                <h3>{{tits.name}}</h3>
-                <div class="meta">
-                    <span class="rate">★ {{tits.rate}}</span>
-                    <span class="year">{{tits.year}}</span>
+                </a>
+                <div class="card-info mt-2">
+                    <h3 class="text-truncate" title="{{tits.name}}">{{tits.name}}</h3>
+                    <div class="meta d-flex justify-content-between">
+                        <span class="rate text-warning">★ {{tits.rate}}</span>
+                        <span class="year text-muted">{{tits.year}}</span>
+                    </div>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; color: var(--clr-text-muted); padding: var(--sp-2xl) 0; animation: fadeIn var(--dur-normal) var(--ease-smooth);">
+        <div class="col-12 text-center text-muted py-5" style="animation: fadeIn var(--dur-normal) var(--ease-smooth);">
             <div style="font-size: 4rem; margin-bottom: var(--sp-md); opacity: 0.2;">🔍</div>
-            <p style="font-size: 1.2rem;">We couldn't find any results for "{{ query }}".</p>
-            <p style="margin-top: var(--sp-sm);">Try searching for actor names or different keywords.</p>
+            <p class="fs-4">We couldn't find any results for "{{ query }}".</p>
+            <p class="mt-2">Try searching for actor names or different keywords.</p>
         </div>
         {% endfor %}
     </div>
