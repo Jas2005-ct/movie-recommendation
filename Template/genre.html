@@ -20,7 +20,7 @@
                     <img src="{% if c.image_url %}{{ c.image_url }}{% else %}{% static 'images/genres/' %}{{ c.genre|lower|slugify }}.png{% endif %}"
                         alt="{{ c.genre }}"
                         class="img-fluid"
-                        onerror="this.src='https://via.placeholder.com/400x300/10141e/ffffff?text={{ c.genre }}'">
+                        onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                 </div>
                 <div class="genre-info">
                     <h3>{{ c.genre }}</h3>
