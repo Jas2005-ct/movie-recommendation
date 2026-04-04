@@ -20,48 +20,6 @@ from .models import Movie, Genre, MovieGenre, Review
 
 
 # ---------------------------------------------------------------------------
-# aggressive monkeypatch for schema mismatch
-tmdb_id_field = Genre._meta.get_field('tmdb_id')
-tmdb_id_field.primary_key = False
-tmdb_id_field.unique = True
-
-try:
-    id_field = Genre._meta.get_field('id')
-except:
-    id_field = models.AutoField(primary_key=True, name='id', db_column='id')
-    id_field.contribute_to_class(Genre, 'id')
-
-id_field.primary_key = True
-Genre._meta.pk = id_field
-Genre._meta.db_table = 'genre'
-MovieGenre._meta.db_table = 'movie_genre'
-
-# Update Foreign Keys
-for field in MovieGenre._meta.local_fields:
-    if field.name == 'genre':
-        field.remote_field.field_name = 'id'
-
-for field in Movie._meta.local_many_to_many:
-    if field.name == 'genres':
-        field.remote_field.field_name = 'id'
-
-# Ensure Movie is imported for M2M lookup
-from .models import Movie
-Genre._meta._expire_cache()
-Movie._meta._expire_cache()
-MovieGenre._meta._expire_cache()
-
-# Monkeypatch Movie to remove fields that don't exist in DB
-# Fields known to be missing: director, cast, cache_updated_at
-MISSING_MOVIE_FIELDS = ['director', 'cast', 'cache_updated_at']
-Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
-# for f_name in MISSING_MOVIE_FIELDS:
-#     if hasattr(Movie, f_name):
-#         delattr(Movie, f_name)
-if hasattr(Movie._meta, '_get_fields_cache'):
-    del Movie._meta._get_fields_cache
-Movie._meta._expire_cache()
-
 # ---------------------------------------------------------------------------
 
 # Helper: convert a Movie queryset to the dict format templates expect
@@ -248,8 +206,7 @@ class GenreHTMLView(TemplateView):
         context = super().get_context_data(**kwargs)
         genres  = (
             Genre.objects
-            .filter(movies__isnull=False,image__isnull=False)
-            .exclude(image='')
+            .filter(movies__isnull=False)
             .distinct()
             .order_by('name')
         )

@@ -6,20 +6,20 @@
 <link rel="stylesheet" href="{% static 'styles/details.css' %}">
 {% endblock %}
 
-<main>
+<main class="container-fluid px-3 px-md-5 mt-4">
     {% if det %}
     <section class="movie-details">
-        <h1>{{ det.name }}</h1>
-        <div class="details-wrapper">
-            <div class="movie-poster">
+        <h1 class="mb-4">{{ det.name }}</h1>
+        <div class="row g-4 details-wrapper">
+            <div class="col-12 col-md-4 col-lg-3 movie-poster text-center text-md-start">
                 {% if det.img.url %}
-                <img src="{{ det.img.url }}" alt="{{ det.name }} Poster" loading="lazy">
+                <img src="{{ det.img.url }}" class="img-fluid rounded" alt="{{ det.name }} Poster" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                 {% else %}
-                <img src="https://via.placeholder.com/500x750?text=No+Poster" alt="No Poster">
+                <img src="https://via.placeholder.com/500x750?text=No+Poster" class="img-fluid rounded" alt="No Poster" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                 {% endif %}
             </div>
 
-            <div class="movie-info">
+            <div class="col-12 col-md-8 col-lg-9 movie-info">
                 {% if det.tagline %}
                 <p style="font-size: 1.2rem; font-style: italic; color: var(--clr-accent);">"{{ det.tagline }}"</p>
                 {% endif %}

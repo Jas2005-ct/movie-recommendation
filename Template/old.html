@@ -1,26 +1,35 @@
  {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
 <link rel="stylesheet" href="{% static 'styles/index.css' %}"> {% endblock %}
-<section class="featured">
-    <h1><a href="{% url 'index' %}">Feature Movies</a>/<a href="{% url 'old_mov' %}">Retro Movies</a></h1>
-    <form class="srt" method="GET" action="{% url 'old_mov' %}">
-        <select name="sort" onchange="this.form.submit()">
-            <option value="">Select Option</option>
-            <option value="year">Year</option>
-            <option value="az">A to Z</option>
-        </select>
-    </form>
-</section>
-<div class="movies">
-    {% for ti in tit %}
-    <div class="movie">
-        <a href="{% url 'mov_detail' id=ti.id %}">
-            <img src="{{ti.img.url}}">
-        </a>
-        <h2>{{ti.name}} </h2>
-        <p>{{ti.rate}}</p>
-        <p class=" year ">{{ti.year}}</p>
+<main class="container-fluid px-3 px-md-5 mt-4">
+    <section class="section-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <h1 class="section-heading mb-3 mb-md-0">
+            <a href="{% url 'index' %}" class="text-decoration-none text-white opacity-50">Feature</a> / <span>Retro Movies</span>
+        </h1>
+        <form class="ms-md-auto" method="GET" action="{% url 'old_mov' %}" id="sort-form">
+            <select name="sort" class="form-select bg-dark text-white border-accent" onchange="this.form.submit()" style="width: auto; min-width: 180px;">
+                <option value="">Sort By...</option>
+                <option value="year">Release Year</option>
+                <option value="az">A to Z</option>
+            </select>
+        </form>
+    </section>
+
+    <div class="row g-4 justify-content-center">
+        {% for ti in tit %}
+        <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+            <div class="movie shadow-sm h-100 p-0 overflow-hidden">
+                <a href="{% url 'mov_detail' id=ti.id %}" class="d-block">
+                    <img src="{{ti.img.url}}" class="img-fluid" alt="{{ti.name}}">
+                </a>
+                <div class="p-2 text-center text-truncate">
+                    <h2 class="h6 mb-1 text-truncate" title="{{ti.name}}">{{ti.name}}</h2>
+                    <p class="small mb-1 text-accent">★ {{ti.rate}}</p>
+                    <p class="small mb-0 text-muted">{{ti.year}}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+</main>
 <script src="{% static 'js/script.js' %} "></script>
-{%endblock%}
+{% endblock %}

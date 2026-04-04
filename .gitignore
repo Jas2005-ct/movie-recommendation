@@ -19,6 +19,7 @@ media/
 assets/
 static_root/
 captured_images/
+helper_scripts/
 
 # Editor/OS files
 .vscode/

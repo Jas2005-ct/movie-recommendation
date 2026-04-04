@@ -62,42 +62,7 @@ class Command(BaseCommand):
     # Entry point
     # ------------------------------------------------------------------
     def handle(self, *args, **options):
-        # Apply aggressive monkeypatch for schema mismatch
-        # Remap Genre PK from tmdb_id -> id (which exists in DB)
-        tmdb_id_field = Genre._meta.get_field('tmdb_id')
-        tmdb_id_field.primary_key = False
-        tmdb_id_field.unique = True # Keep it unique for FK references
-        
-        try:
-            id_field = Genre._meta.get_field('id')
-        except:
-            id_field = models.AutoField(primary_key=True, name='id', db_column='id')
-            id_field.contribute_to_class(Genre, 'id')
-        
-        id_field.primary_key = True
-        Genre._meta.pk = id_field
-        Genre._meta.db_table = 'genre'
-        MovieGenre._meta.db_table = 'movie_genre'
-        
-        # Update Foreign Keys
-        for field in MovieGenre._meta.local_fields:
-            if field.name == 'genre':
-                field.remote_field.field_name = 'id'
-        
-        for field in Movie._meta.local_many_to_many:
-            if field.name == 'genres':
-                field.remote_field.field_name = 'id'
-        
-        Genre._meta._expire_cache()
-        Movie._meta._expire_cache()
-        MovieGenre._meta._expire_cache()
-        
-        # Monkeypatch Movie to remove fields that don't exist in DB
-        Movie._meta.local_fields = [f for f in Movie._meta.local_fields if f.name not in MISSING_MOVIE_FIELDS]
-        for f_name in MISSING_MOVIE_FIELDS:
-            if hasattr(Movie, f_name):
-                delattr(Movie, f_name)
-        Movie._meta._expire_cache()
+# ---------------------------------------------------------------------------
         
         pages         = options['pages']
         tv_pages      = options['tv_pages']
@@ -357,20 +322,6 @@ class Command(BaseCommand):
     # Helper — link Genre FK rows
     # ------------------------------------------------------------------
     def _link_genres(self, movie_obj: Movie, genre_ids: list):
-        """Create MovieGenre through-rows using Raw SQL because of schema mismatch."""
-        with connection.cursor() as cursor:
-            for gid in genre_ids:
-                # 1. Get the actual internal 'id' for this tmdb_id
-                cursor.execute("SELECT id FROM genre WHERE tmdb_id = %s", [gid])
-                row = cursor.fetchone()
-                if row:
-                    internal_id = row[0]
-                    # 2. Insert into movie_genre
-                    try:
-                        # Use ON CONFLICT DO NOTHING for PostgreSQL uniqueness
-                        cursor.execute(
-                            "INSERT INTO movie_genre (movie_id, genre_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
-                            [movie_obj.tmdb_id, internal_id]
-                        )
-                    except Exception:
-                        pass
+        """Create MovieGenre through-rows using standard ORM."""
+        genres = Genre.objects.filter(tmdb_id__in=genre_ids)
+        movie_obj.genres.add(*genres)
