@@ -1,20 +1,24 @@
 {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block sepr_css %}
 <link rel="stylesheet" href="{% static 'styles/index.css' %}"> {% endblock %}{% block content %}
-<main>
+<main class="container-fluid px-3 px-md-5 mt-4">
     <section class="featured">
-        <div class="movies">
+        <h1 class="section-heading mb-4 text-center">Movies in <span>Genre</span></h1>
+        <div class="row g-4 justify-content-center">
             {% for tits in movies %}
-            <div class="movie">
-                <a href="{% url 'mov_detail' id=tits.id %}">
-                    <img src="{{tits.img.url}}">
-                </a>
-                <h2>{{tits.name}} </h2>
-                <p>{{tits.rate}}</p>
-                <p class=" year ">{{tits.year}}</p>
+            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                <div class="movie shadow-sm h-100 p-0 overflow-hidden">
+                    <a href="{% url 'mov_detail' id=tits.id %}" class="d-block">
+                        <img src="{{tits.img.url}}" class="img-fluid" alt="{{tits.name}}">
+                    </a>
+                    <div class="p-2 text-center text-truncate">
+                        <h2 class="h6 mb-1 text-truncate" title="{{tits.name}}">{{tits.name}}</h2>
+                        <p class="small mb-1 text-accent">★ {{tits.rate}}</p>
+                        <p class="small mb-0 text-muted">{{tits.year}}</p>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
     </section>
-
 </main>
-{%endblock%}
+{% endblock %}

@@ -39,9 +39,9 @@
                 <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
                     <div class="poster-wrapper">
                         {% if tits.poster %}
-                        <img src="{{tits.poster}}" class="img-fluid rounded" alt="{{tits.name}}" loading="lazy">
+                        <img src="{{tits.poster}}" class="img-fluid rounded" alt="{{tits.name}}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                         {% else %}
-                        <img src="https://via.placeholder.com/500x750?text=No+Poster" class="img-fluid rounded" alt="No Poster">
+                        <img src="{% static 'images/icon3.jpg' %}" class="img-fluid rounded" alt="No Poster" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                         {% endif %}
                         <div class="overlay-glass">
                             <span class="view-text">View Details</span>
@@ -77,9 +77,9 @@
                 <a href="{% url 'movie_detail' tmdb_id=tits.id %}" class="poster-link">
                     <div class="poster-wrapper">
                         {% if tits.poster %}
-                        <img src="{{tits.poster}}" class="img-fluid rounded" alt="{{tits.name}}" loading="lazy">
+                        <img src="{{tits.poster}}" class="img-fluid rounded" alt="{{tits.name}}" loading="lazy" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                         {% else %}
-                        <img src="https://via.placeholder.com/500x750?text=No+Poster" class="img-fluid rounded" alt="No Poster">
+                        <img src="{% static 'images/icon3.jpg' %}" class="img-fluid rounded" alt="No Poster" onerror="this.onerror=null; this.src='{% static 'images/icon3.jpg' %}'">
                         {% endif %}
                         <div class="overlay-glass">
                             <span class="view-text">View Details</span>

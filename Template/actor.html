@@ -6,17 +6,20 @@
 {% endblock %}
 
 {% block content %}
-<main style="padding: var(--sp-xl);">
-    <h1 class="section-heading" style="text-align: center; margin-bottom: var(--sp-lg);">Browse by <span>Actor</span>
-    </h1>
+<main class="container-fluid px-3 px-md-5 mt-4">
+    <h1 class="section-heading text-center mb-4">Browse by <span>Actor</span></h1>
     <section class="featured">
-        <div class="movies">
+        <div class="row g-4 justify-content-center">
             {% for a in acts %}
-            <div class="movie">
-                <a href="{% url 'acts_detail' actor_id=a.actor_id %}">
-                    <img src="{% static 'images/'|add:a.img %}" alt="{{a.actor}}">
-                </a>
-                <h2>{{a.actor}}</h2>
+            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                <div class="movie shadow-sm h-100">
+                    <a href="{% url 'acts_detail' actor_id=a.actor_id %}" class="d-block">
+                        <img src="{% static 'images/'|add:a.img %}" class="img-fluid rounded-top" alt="{{a.actor}}">
+                    </a>
+                    <div class="p-2 text-center">
+                        <h2 class="h6 mb-0 text-truncate" title="{{a.actor}}">{{a.actor}}</h2>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>

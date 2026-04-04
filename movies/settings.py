@@ -7,7 +7,6 @@ DRF and CORS have been removed — this is a template-only Django app.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,13 +137,18 @@ STATIC_URL      = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT     = os.path.join(BASE_DIR, 'assets')
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
+# Media & Storage settings for Django 4.2+ (Media on Cloudinary, Static on WhiteNoise)
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-if os.environ.get('CLOUDINARY_URL'):
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if os.environ.get('CLOUDINARY_URL') else "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # =============================================================================
 # Misc

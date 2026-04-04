@@ -60,6 +60,7 @@
                         fetch(`/api/search-suggestions/?query=${encodeURIComponent(query)}`)
                             .then(response => response.json())
                             .then(data => {
+                                const fallbackIcon = "{% static 'images/icon3.jpg' %}";
                                 searchResults.innerHTML = '';
                                 if (data.results.length > 0) {
                                     data.results.forEach(movie => {
@@ -67,7 +68,9 @@
                                         item.href = movie.url;
                                         item.className = 'result-item';
                                         item.innerHTML = `
-                                            <img src="${movie.poster || 'https://via.placeholder.com/45x68/0d1525/ffffff?text=?'}" alt="${movie.title}">
+                                            <img src="${movie.poster || fallbackIcon}" 
+                                                 alt="${movie.title}" 
+                                                 onerror="this.onerror=null; this.src='${fallbackIcon}'">
                                             <div class="result-details">
                                                 <h4>${movie.title}</h4>
                                                 <p>${movie.year || 'N/A'}</p>

@@ -1,17 +1,21 @@
  {% extends 'header.html' %} {% load static %} {% static "images" as baseUrl %} {% block content %} {% block sepr_css %}
 <link rel="stylesheet" href="{% static 'styles/acts.css' %}"> {% endblock %}
-<main>
+<main class="container-fluid px-3 px-md-5 mt-4 text-center">
     <section class="featured">
-        <h1>COMEDIAN</h1>
-        <div class="movies">
+        <h1 class="section-heading mb-4"><span>Comedian</span></h1>
+        <div class="row g-4 justify-content-center">
             {% for a in com %}
-            <div class="movie">
-                <a href="{%url 'come_detail' comedian_id=a.comedian_id %}">
-                    <img src="{{a.img.url}}">
-                </a>
-                <h2>{{a.comedian}} </h2>
+            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                <div class="movie shadow-sm h-100">
+                    <a href="{% url 'come_detail' comedian_id=a.comedian_id %}" class="d-block">
+                        <img src="{{a.img.url}}" class="img-fluid rounded-top" alt="{{a.comedian}}">
+                    </a>
+                    <div class="p-2">
+                        <h2 class="h6 mb-0 text-truncate" title="{{a.comedian}}">{{a.comedian}}</h2>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
     </section>
-</main>{%endblock%}
+</main>{% endblock %}
